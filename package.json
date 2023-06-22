@@ -1,11 +1,11 @@
 {
-  "name": "chrome-extension-boilerplate-react",
-  "version": "5.0.4",
-  "description": "A chrome extension boilerplate built with React 18, Webpack 5, and Webpack Dev Server 4",
+  "name": "jira-cloud-chrome-extension",
+  "version": "0.0.1",
+  "description": "A Chrome browser extension that extends Jira Cloud functionality",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lxieyang/chrome-extension-boilerplate-react.git"
+    "url": "https://github.com/civitaslearning/jira-cloud-chrome-extension.git"
   },
   "scripts": {
     "build": "node utils/build.js",
