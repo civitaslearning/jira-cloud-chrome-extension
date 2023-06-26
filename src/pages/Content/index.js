@@ -4,6 +4,20 @@ import {getIssuesForKeys, JIRA_FIELD_IDS} from './jiraApiUtils'
 
 console.log('jce: Content script running bar8...');
 
+// software-backlog.card-list.card.card-contents.card-container
+
+const colorizeCard = (issueCardEl, color) => {
+  console.log('jce: colorizeCard');
+  const issueCardContainerEl = issueCardEl.querySelectorAll(`*[data-testid='software-backlog.card-list.card.card-contents.card-container']`)?.item(0);
+  
+  if(issueCardContainerEl) {
+    console.log('jce: colorizeCard: found container');
+  } else {
+    console.log('jce: colorizeCard: did not find container');
+  }
+  issueCardContainerEl?.setAttribute("style", `background-color:red;`);
+  
+}
 
 
 /**
@@ -34,6 +48,13 @@ const getIssueCardElements = backlogElement => {
  */
 const handleBacklogMutation = async backlogElement => {
   const issueCardElements = getIssueCardElements(backlogElement);
+
+  issueCardElements.forEach(
+    issueCardElement => {
+      console.log(`jce: colorizing issue: ${getIssueKeyFromIssueCardElement(issueCardElement)}`);
+      colorizeCard(issueCardElement, "green");
+    }
+  );
 
   const issueCardElementsThatNeedModificationMap = getMapOfIssueCardElementsThatNeedModification(issueCardElements);
 
