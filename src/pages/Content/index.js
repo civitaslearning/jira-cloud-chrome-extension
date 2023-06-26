@@ -1,4 +1,9 @@
-console.log('jce: Content script running...');
+//import {getIssuesForKeys, JIRA_FIELD_IDS} from './jiraApiUtls'
+import {getIssuesForKeys, JIRA_FIELD_IDS} from './jiraApiUtils'
+
+
+console.log('jce: Content script running bar8...');
+
 
 
 /**
@@ -30,7 +35,17 @@ const getIssueCardElements = backlogElement => {
 const handleBacklogMutation = async backlogElement => {
   const issueCardElements = getIssueCardElements(backlogElement);
 
-  getMapOfIssueCardElementsThatNeedModification(issueCardElements);
+  const issueCardElementsThatNeedModificationMap = getMapOfIssueCardElementsThatNeedModification(issueCardElements);
+
+  
+  const issues = await getIssuesForKeys(
+    [...issueCardElementsThatNeedModificationMap.keys()], // Convert map iterator to Array
+    [
+      JIRA_FIELD_IDS.KEY,
+      JIRA_FIELD_IDS.LABELS,
+      JIRA_FIELD_IDS.STORY_POINT_ESTIMATE
+    ]
+  );
 }
 
 /**
@@ -47,7 +62,7 @@ const getMapOfIssueCardElementsThatNeedModification = issueCardElements => {
       if( !isModifiedByExtension(issueCardElement)) {
         setModifiedByExtension(issueCardElement);
         issueCardElementsThatNeedModificationMap.set(
-          getIssueKeyFromIssueCardElememt(issueCardElement),
+          getIssueKeyFromIssueCardElement(issueCardElement),
           issueCardElement
         );
       }
@@ -64,9 +79,9 @@ const getMapOfIssueCardElementsThatNeedModification = issueCardElements => {
  * @param {*} issueCardElement 
  * @returns 
  */
-const getIssueKeyFromIssueCardElememt = issueCardElement => {
+const getIssueKeyFromIssueCardElement = issueCardElement => {
   
-  return issueCardElement?.getAttribute("data-test-id");
+  return issueCardElement?.getAttribute("data-test-id").slice('software-backlog.card-list.card.content-container.'.length);
 }
 
 /**
@@ -96,12 +111,14 @@ const observer = new MutationObserver(
   mutations => {  
     mutations.map(
       mutation => {
-        const backlogNode = getBacklogElement(mutation.target);
+        handleBacklogMutation(mutation.target);
+
+        /*const backlogNode = getBacklogElement(mutation.target);
 
         if(backlogNode) {
           console.log('jce: Found backlog');
           handleBacklogMutation(backlogNode);
-        }
+        }*/
       }       
     )
   }    
