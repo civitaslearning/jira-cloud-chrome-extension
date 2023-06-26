@@ -8,15 +8,13 @@
     "default_popup": "popup.html",
     "default_icon": "icon-34.png"
   },
-  "chrome_url_overrides": {
-    "newtab": "newtab.html"
-  },
   "icons": {
     "128": "icon-128.png"
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*", "<all_urls>"],
+      "matches": ["https://civitaslearning.atlassian.net/jira/software/projects/DOPE/boards/23/backlog*"],
+      "run_at": "document_start",
       "js": ["contentScript.bundle.js"],
       "css": ["content.styles.css"]
     }
