@@ -1,4 +1,4 @@
-import {getIssueDataForIssueKeys, JIRA_FIELD_IDS} from './jiraApiUtils'
+import {getIssueData, JIRA_FIELD_IDS} from './jiraApiUtils'
 
 console.log('jce: Content script running...')
 
@@ -13,20 +13,28 @@ const colorizeCard = (issueCardEl, color) => {
 /**
  * Gets the element that contains the backlog
  * 
- * @param {*} element 
  * @returns 
  */
-const getBacklogElement = element => {
-  return element.querySelectorAll(`*[data-test-id='software-backlog.backlog-content.scrollable']`)?.item(0);
+const getBacklogElement = () => {
+  return document.querySelectorAll(`*[data-test-id='software-backlog.backlog-content.scrollable']`)?.item(0);
 }
 
 /**
- * Gets the descendent issue card elements of the backlog element
+ * Gets the element that contains the board
+ * 
+ * @returns 
+ */
+const getBoardElement = () => {
+  return document.querySelectorAll(`*[data-test-id='software-board.board']`)?.item(0);
+}
+
+/**
+ * Gets the backlog cards that are descendents of the backlog element
  * 
  * @param {*} backlogElement 
  * @returns 
  */
-const getIssueCardElements = backlogElement => {
+const getBacklogCards = backlogElement => {
   return backlogElement.querySelectorAll(`*[data-test-id^='software-backlog.card-list.card.content-container']`);
 }
 
@@ -35,7 +43,7 @@ const getIssueCardElements = backlogElement => {
  * 
  * @param {*} issuesData 
  */
-const getIssuesDataMap = issuesData => {
+const getIssueDataMap = issuesData => {
   const issuesDataMap = new Map();
 
   issuesData.map(
@@ -59,12 +67,16 @@ const getIssuesDataMap = issuesData => {
  * @returns 
  */
 const handleBacklogMutation = async backlogElement => {
-  const issueCardElements = getIssueCardElements(backlogElement);
+  const backlogCards = getBacklogCards(backlogElement);
 
-  const issueCardElementsThatNeedModificationMap = getMapOfIssueCardElementsThatNeedModification(issueCardElements);
+  const backlogCardsThatNeedModificationMap = 
+    getMapOfCardsThatNeedModification(
+      backlogCards,
+      getIssueKeyFromBacklogCard
+      );
   
-  const issuesData = await getIssueDataForIssueKeys(
-    [...issueCardElementsThatNeedModificationMap.keys()], // Convert map iterator to Array
+  const issueData = await getIssueData(
+    [...backlogCardsThatNeedModificationMap.keys()], // Convert map iterator to Array
     [
       JIRA_FIELD_IDS.ASSIGNEE,
       JIRA_FIELD_IDS.KEY,
@@ -76,13 +88,23 @@ const handleBacklogMutation = async backlogElement => {
     ]
   );
 
-  const issuesDataMap = getIssuesDataMap(issuesData);
+  const issueDataMap = getIssueDataMap(issueData);
 
-  issueCardElementsThatNeedModificationMap.forEach(
-    (issueCardElement, issueKey) => {
-      applyBaseCardModifications(issueCardElement, issuesDataMap.get(issueKey));
+  backlogCardsThatNeedModificationMap.forEach(
+    (issueCard, issueKey) => {
+      applyBacklogCardModifications(issueCard, issueDataMap.get(issueKey));
     }
   );
+}
+
+/**
+ * Handles a mutation of the boardElement
+ * 
+ * @param {*} boardElement 
+ * @returns 
+ */
+const handleBoardMutation = async boardElement => {
+
 }
 
 /**
@@ -90,7 +112,7 @@ const handleBacklogMutation = async backlogElement => {
  * @param {*} issueCardElement 
  * @param {*} issueData 
  */
-const applyBaseCardModifications = (issueCardElement, issueData) => {  
+const applyBacklogCardModifications = (issueCardElement, issueData) => {  
   if(issueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE]) {
     colorizeCard(issueCardElement, "#c1e1c1");
   } else {
@@ -99,40 +121,43 @@ const applyBaseCardModifications = (issueCardElement, issueData) => {
 }
 
 /**
- * Gets a map of all issue card elements that need modification. Map is keyed by the issue key.
+ * Gets a map of all issue cards that need modification. Map is keyed by the issue key.
  * 
- * @param {*} issueCardElements 
+ * @param {*} issueCards 
  */
-const getMapOfIssueCardElementsThatNeedModification = issueCardElements => {
-  const issueCardElementsThatNeedModificationMap = new Map();
+const getMapOfCardsThatNeedModification = (
+  issueCards,
+  getIssueKeyFromCard
+ ) => {
+  const issueCardsThatNeedModificationMap = new Map();
 
-  issueCardElements?.forEach(
-    issueCardElement => {
-      if( !isModifiedByExtension(issueCardElement)) {
-        setModifiedByExtension(issueCardElement);
-        issueCardElementsThatNeedModificationMap.set(
-          getIssueKeyFromIssueCardElement(issueCardElement),
-          issueCardElement
+  issueCards?.forEach(
+    issueCard => {
+      if( !isModifiedByExtension(issueCard)) {
+        setModifiedByExtension(issueCard);
+        issueCardsThatNeedModificationMap.set(
+          getIssueKeyFromCard(issueCard),
+          issueCard
         );
       }
     }
   );
 
-  if(issueCardElementsThatNeedModificationMap.size) {
-    console.log(`jce: getMapOfIssueCardElementsThatNeedModification: found ${issueCardElementsThatNeedModificationMap.size} issue card elements that need modification`);
+  if(issueCardsThatNeedModificationMap.size) {
+    console.log(`jce: getMapOfCardsThatNeedModification: found ${issueCardsThatNeedModificationMap.size} issue card elements that need modification`);
   }
-  return issueCardElementsThatNeedModificationMap;
+  return issueCardsThatNeedModificationMap;
 }
 
 /**
- * Gets the Jira issue key from the given issue card element
+ * Gets the Jira issue key from the given backlog card
  * 
- * @param {*} issueCardElement 
+ * @param {*} backlogCard 
  * @returns 
  */
-const getIssueKeyFromIssueCardElement = issueCardElement => {
+const getIssueKeyFromBacklogCard = backlogCard => {
   
-  return issueCardElement?.getAttribute("data-test-id").slice('software-backlog.card-list.card.content-container.'.length);
+  return backlogCard?.getAttribute("data-test-id").slice('software-backlog.card-list.card.content-container.'.length);
 }
 
 /**
@@ -162,7 +187,17 @@ const observer = new MutationObserver(
   mutations => {  
     mutations.map(
       mutation => {
-        handleBacklogMutation(mutation.target);
+        const mutationTarget = mutation.target;
+
+        const backlogElement = getBacklogElement(mutationTarget);
+        
+        if(backlogElement) {
+          handleBacklogMutation(backlogElement);
+        }
+        else {
+          const boardElement = getBoardElement(mutationTarget);
+          handleBoardMutation(boardElement);
+        }
 
         /*const backlogNode = getBacklogElement(mutation.target);
 
