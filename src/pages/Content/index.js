@@ -62,9 +62,13 @@ const handleBacklogMutation = async backlogElement => {
   const issues = await getIssuesForKeys(
     [...issueCardElementsThatNeedModificationMap.keys()], // Convert map iterator to Array
     [
+      JIRA_FIELD_IDS.ASSIGNEE,
       JIRA_FIELD_IDS.KEY,
       JIRA_FIELD_IDS.LABELS,
-      JIRA_FIELD_IDS.STORY_POINT_ESTIMATE
+      JIRA_FIELD_IDS.OWNER,
+      JIRA_FIELD_IDS.PAIR_ASSIGNEE, 
+      JIRA_FIELD_IDS.STORY_POINT_ESTIMATE,
+      JIRA_FIELD_IDS.TESTER
     ]
   );
 }

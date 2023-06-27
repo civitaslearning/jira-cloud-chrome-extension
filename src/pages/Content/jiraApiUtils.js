@@ -3,9 +3,14 @@ import _ from 'lodash';
 
 // Jira Field Ids
 export const JIRA_FIELD_IDS = {
-   KEY:"key",
+   ASSIGNEE: "assignee",
+   KEY: "key",
+   LABELS: "labels",
+   OWNER: "customfield_10152",
+   PAIR_ASSIGNEE: "customfield_10174", 
    STORY_POINT_ESTIMATE: "customfield_10016",
-   LABELS: "labels"
+   TESTER: "customfield_10127"
+   
 };
 
 /**
@@ -13,7 +18,6 @@ export const JIRA_FIELD_IDS = {
  * @param {*} param0 
  * @returns 
  */
-
 export const makeJiraApiRequest = async (
   {
     method='POST',
@@ -83,15 +87,22 @@ export const makeJqlRequest = async (
   
 }
 
-export const getIssuesForKeys = async (keys, fields=[]) => {
+/**
+ * Get issue data for the issue keys
+ * 
+ * @param {*} issueKeys 
+ * @param {*} fields 
+ * @returns 
+ */
+export const getIssuesForKeys = async (issueKeys, fields=[]) => {
 
-  if(!keys.length) {
+  if(!issueKeys.length) {
     return [];
   }
   
-  const jql = `key in (${keys.join()})`;
-  //const jql = `key in (DOPE-206)`;
-  console.log(`jce: getIssuesForKeys: number of keys: ${keys?.length}}`);
+  const jql = `key in (${issueKeys.join()})`;
+  //const jql = `key in (DOPE-280)`;
+  console.log(`jce: getIssuesForKeys: number of keys: ${issueKeys?.length}}`);
   console.log(`jce: getIssuesForKeys: jql: ${jql}}`);
 
   const issueData = await makeJqlRequest(
