@@ -94,7 +94,7 @@ export const makeJqlRequest = async (
  * @param {*} fields 
  * @returns 
  */
-export const getIssuesForKeys = async (issueKeys, fields=[]) => {
+export const getIssueDataForIssueKeys = async (issueKeys, fields=[]) => {
 
   if(!issueKeys.length) {
     return [];

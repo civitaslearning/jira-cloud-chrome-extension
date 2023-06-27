@@ -1,21 +1,12 @@
-//import {getIssuesForKeys, JIRA_FIELD_IDS} from './jiraApiUtls'
-import {getIssuesForKeys, JIRA_FIELD_IDS} from './jiraApiUtils'
+import {getIssueDataForIssueKeys, JIRA_FIELD_IDS} from './jiraApiUtils'
 
-
-console.log('jce: Content script running bar8...');
-
-// software-backlog.card-list.card.card-contents.card-container
+console.log('jce: Content script running...')
 
 const colorizeCard = (issueCardEl, color) => {
   console.log('jce: colorizeCard');
   const issueCardContainerEl = issueCardEl.querySelectorAll(`*[data-testid='software-backlog.card-list.card.card-contents.card-container']`)?.item(0);
   
-  if(issueCardContainerEl) {
-    console.log('jce: colorizeCard: found container');
-  } else {
-    console.log('jce: colorizeCard: did not find container');
-  }
-  issueCardContainerEl?.setAttribute("style", `background-color:red;`);
+  issueCardContainerEl?.setAttribute("style", `background-color:${color}`);
   
 }
 
@@ -41,6 +32,28 @@ const getIssueCardElements = backlogElement => {
 }
 
 /**
+ * Gets a map of jira issue data keyed by the issue key
+ * 
+ * @param {*} issuesData 
+ */
+const getIssuesDataMap = issuesData => {
+  const issuesDataMap = new Map();
+
+  issuesData.map(
+    issueData => {
+      const issueKey = issueData.key;
+
+      issuesDataMap.set(
+        issueKey,
+        issueData
+      );
+    }
+  );
+
+  return issuesDataMap;
+}
+
+/**
  * Handles a mutation of the backlogElement
  * 
  * @param {*} backlogElement 
@@ -49,17 +62,9 @@ const getIssueCardElements = backlogElement => {
 const handleBacklogMutation = async backlogElement => {
   const issueCardElements = getIssueCardElements(backlogElement);
 
-  issueCardElements.forEach(
-    issueCardElement => {
-      console.log(`jce: colorizing issue: ${getIssueKeyFromIssueCardElement(issueCardElement)}`);
-      colorizeCard(issueCardElement, "green");
-    }
-  );
-
   const issueCardElementsThatNeedModificationMap = getMapOfIssueCardElementsThatNeedModification(issueCardElements);
-
   
-  const issues = await getIssuesForKeys(
+  const issuesData = await getIssueDataForIssueKeys(
     [...issueCardElementsThatNeedModificationMap.keys()], // Convert map iterator to Array
     [
       JIRA_FIELD_IDS.ASSIGNEE,
@@ -71,10 +76,33 @@ const handleBacklogMutation = async backlogElement => {
       JIRA_FIELD_IDS.TESTER
     ]
   );
+
+  const issuesDataMap = getIssuesDataMap(issuesData);
+
+  issueCardElementsThatNeedModificationMap.forEach(
+    (issueCardElement, issueKey) => {
+      applyBaseCardModifications(issueCardElement, issuesDataMap.get(issueKey));
+    }
+  );
 }
 
 /**
- * Gets a map of all issue card elements that need modification. Map is keyed by the issue ID.
+ * 
+ * @param {*} issueCardElement 
+ * @param {*} issueData 
+ */
+const applyBaseCardModifications = (issueCardElement, issueData) => {
+  console.log(`jce: applyBaseCardModifications: ${issueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE]}`);
+  
+  if(issueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE]) {
+    colorizeCard(issueCardElement, "#c1e1c1");
+  } else {
+    colorizeCard(issueCardElement, "#fafad2");
+  }
+}
+
+/**
+ * Gets a map of all issue card elements that need modification. Map is keyed by the issue key.
  * 
  * @param {*} issueCardElements 
  */
