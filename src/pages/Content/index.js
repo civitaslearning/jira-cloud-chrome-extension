@@ -3,7 +3,6 @@ import {getIssueDataForIssueKeys, JIRA_FIELD_IDS} from './jiraApiUtils'
 console.log('jce: Content script running...')
 
 const colorizeCard = (issueCardEl, color) => {
-  console.log('jce: colorizeCard');
   const issueCardContainerEl = issueCardEl.querySelectorAll(`*[data-testid='software-backlog.card-list.card.card-contents.card-container']`)?.item(0);
   
   issueCardContainerEl?.setAttribute("style", `background-color:${color}`);
@@ -91,9 +90,7 @@ const handleBacklogMutation = async backlogElement => {
  * @param {*} issueCardElement 
  * @param {*} issueData 
  */
-const applyBaseCardModifications = (issueCardElement, issueData) => {
-  console.log(`jce: applyBaseCardModifications: ${issueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE]}`);
-  
+const applyBaseCardModifications = (issueCardElement, issueData) => {  
   if(issueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE]) {
     colorizeCard(issueCardElement, "#c1e1c1");
   } else {
@@ -107,7 +104,6 @@ const applyBaseCardModifications = (issueCardElement, issueData) => {
  * @param {*} issueCardElements 
  */
 const getMapOfIssueCardElementsThatNeedModification = issueCardElements => {
-  console.log(`jce: getMapOfIssueCardElementsThatNeedModification: processing ${issueCardElements.length} issue card elements`);
   const issueCardElementsThatNeedModificationMap = new Map();
 
   issueCardElements?.forEach(
@@ -122,7 +118,9 @@ const getMapOfIssueCardElementsThatNeedModification = issueCardElements => {
     }
   );
 
-  console.log(`jce: getMapOfIssueCardElementsThatNeedModification: found ${issueCardElementsThatNeedModificationMap.size} issue card elements that need modification`);
+  if(issueCardElementsThatNeedModificationMap.size) {
+    console.log(`jce: getMapOfIssueCardElementsThatNeedModification: found ${issueCardElementsThatNeedModificationMap.size} issue card elements that need modification`);
+  }
   return issueCardElementsThatNeedModificationMap;
 }
 
