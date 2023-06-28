@@ -1,5 +1,8 @@
 import {getIssueData, JIRA_FIELD_IDS} from './jiraApiUtils'
 
+const MODIFIED_BY_EXTENSION_ATTRIBUTE_NAME = 'modified_by_extension';
+const BACKLOG_CARDS_SELECTOR = '[data-test-id="software-backlog.backlog-content.scrollable"] *[data-test-id^="software-backlog.card-list.card.content-container"]';
+
 console.log('jce: Content script running...')
 
 const colorizeCard = (issueCardEl, color) => {
@@ -7,16 +10,6 @@ const colorizeCard = (issueCardEl, color) => {
   
   issueCardContainerEl?.setAttribute("style", `background-color:${color}`);
   
-}
-
-
-/**
- * Gets the element that contains the backlog
- * 
- * @returns 
- */
-const getBacklogElement = () => {
-  return document.querySelectorAll(`*[data-test-id='software-backlog.backlog-content.scrollable']`)?.item(0);
 }
 
 /**
@@ -29,13 +22,12 @@ const getBoardElement = () => {
 }
 
 /**
- * Gets the backlog cards that are descendents of the backlog element
+ * Gets the issue cards that need to be modified
  * 
- * @param {*} backlogElement 
- * @returns 
+  * @returns 
  */
-const getBacklogCards = backlogElement => {
-  return backlogElement.querySelectorAll(`*[data-test-id^='software-backlog.card-list.card.content-container']`);
+const getIssueCardsThatNeedModification = (cardSelector) => {
+  return [...document.querySelectorAll(`${cardSelector}:not([${MODIFIED_BY_EXTENSION_ATTRIBUTE_NAME}])`)];
 }
 
 /**
@@ -60,23 +52,10 @@ const getIssueDataMap = issuesData => {
   return issuesDataMap;
 }
 
-/**
- * Handles a mutation of the backlogElement
- * 
- * @param {*} backlogElement 
- * @returns 
- */
-const handleBacklogMutation = async backlogElement => {
-  const backlogCards = getBacklogCards(backlogElement);
-
-  const backlogCardsThatNeedModificationMap = 
-    getMapOfCardsThatNeedModification(
-      backlogCards,
-      getIssueKeyFromBacklogCard
-      );
-  
-  const issueData = await getIssueData(
-    [...backlogCardsThatNeedModificationMap.keys()], // Convert map iterator to Array
+const modifyBacklogCards = async () => {
+  return modifyIssueCards( 
+    BACKLOG_CARDS_SELECTOR, 
+    getIssueKeyFromBacklogCard,
     [
       JIRA_FIELD_IDS.ASSIGNEE,
       JIRA_FIELD_IDS.KEY,
@@ -85,27 +64,35 @@ const handleBacklogMutation = async backlogElement => {
       JIRA_FIELD_IDS.PAIR_ASSIGNEE, 
       JIRA_FIELD_IDS.STORY_POINT_ESTIMATE,
       JIRA_FIELD_IDS.TESTER
-    ]
+    ],
+    applyBacklogCardModifications
   );
+}
 
-  const issueDataMap = getIssueDataMap(issueData);
+const modifyIssueCards = async (issueCardSelector, getIssueKeyFromCard, issueFields, applyIssueCardModification) => {
+  const issueCards = getIssueCardsThatNeedModification(issueCardSelector);
 
-  backlogCardsThatNeedModificationMap.forEach(
-    (issueCard, issueKey) => {
-      applyBacklogCardModifications(issueCard, issueDataMap.get(issueKey));
+  const issueKeys = issueCards.map(
+    issueCard => {
+      return getIssueKeyFromCard(issueCard);
     }
   );
+
+  const issueDataMap = getIssueDataMap(
+      await getIssueData(
+        issueKeys,
+        issueFields
+      )
+    );
+
+  issueCards.map(
+    issueCard => {
+      applyIssueCardModification(issueCard, issueDataMap.get(getIssueKeyFromCard(issueCard)));
+    }
+  )
+  
 }
 
-/**
- * Handles a mutation of the boardElement
- * 
- * @param {*} boardElement 
- * @returns 
- */
-const handleBoardMutation = async boardElement => {
-
-}
 
 /**
  * 
@@ -121,35 +108,6 @@ const applyBacklogCardModifications = (issueCardElement, issueData) => {
 }
 
 /**
- * Gets a map of all issue cards that need modification. Map is keyed by the issue key.
- * 
- * @param {*} issueCards 
- */
-const getMapOfCardsThatNeedModification = (
-  issueCards,
-  getIssueKeyFromCard
- ) => {
-  const issueCardsThatNeedModificationMap = new Map();
-
-  issueCards?.forEach(
-    issueCard => {
-      if( !isModifiedByExtension(issueCard)) {
-        setModifiedByExtension(issueCard);
-        issueCardsThatNeedModificationMap.set(
-          getIssueKeyFromCard(issueCard),
-          issueCard
-        );
-      }
-    }
-  );
-
-  if(issueCardsThatNeedModificationMap.size) {
-    console.log(`jce: getMapOfCardsThatNeedModification: found ${issueCardsThatNeedModificationMap.size} issue card elements that need modification`);
-  }
-  return issueCardsThatNeedModificationMap;
-}
-
-/**
  * Gets the Jira issue key from the given backlog card
  * 
  * @param {*} backlogCard 
@@ -158,16 +116,6 @@ const getMapOfCardsThatNeedModification = (
 const getIssueKeyFromBacklogCard = backlogCard => {
   
   return backlogCard?.getAttribute("data-test-id").slice('software-backlog.card-list.card.content-container.'.length);
-}
-
-/**
- * Has the element already been modified by this extension
- * 
- * @param {*} element 
- * @returns 
- */
-const isModifiedByExtension = (element) => {
-  return element?.getAttribute('modified-by-extension')
 }
 
 /**
@@ -187,24 +135,7 @@ const observer = new MutationObserver(
   mutations => {  
     mutations.map(
       mutation => {
-        const mutationTarget = mutation.target;
-
-        const backlogElement = getBacklogElement(mutationTarget);
-        
-        if(backlogElement) {
-          handleBacklogMutation(backlogElement);
-        }
-        else {
-          const boardElement = getBoardElement(mutationTarget);
-          handleBoardMutation(boardElement);
-        }
-
-        /*const backlogNode = getBacklogElement(mutation.target);
-
-        if(backlogNode) {
-          console.log('jce: Found backlog');
-          handleBacklogMutation(backlogNode);
-        }*/
+        modifyBacklogCards();
       }       
     )
   }    
