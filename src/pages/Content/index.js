@@ -5,11 +5,8 @@ const BACKLOG_CARDS_SELECTOR = '[data-test-id="software-backlog.backlog-content.
 
 console.log('jce: Content script running...')
 
-const colorizeCard = (issueCardEl, color) => {
-  const issueCardContainerEl = issueCardEl.querySelectorAll(`*[data-testid='software-backlog.card-list.card.card-contents.card-container']`)?.item(0);
-  
-  issueCardContainerEl?.setAttribute("style", `background-color:${color}`);
-  
+const colorizeCard = (issueCard, color) => {
+  issueCard?.setAttribute("style", `background-color:${color}`);  
 }
 
 /**
@@ -28,6 +25,28 @@ const getBoardElement = () => {
  */
 const getIssueCardsThatNeedModification = (cardSelector) => {
   return [...document.querySelectorAll(`${cardSelector}:not([${MODIFIED_BY_EXTENSION_ATTRIBUTE_NAME}])`)];
+}
+
+const modifyBacklogCard = (backlogCard, backlogIssueData) => {
+  const backlogCardContainer = backlogCard.querySelectorAll(`*[data-testid='software-backlog.card-list.card.card-contents.card-container']`)?.item(0);
+
+  var cardColor;
+  if(backlogIssueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE]) {
+    cardColor = "#c1e1c1";
+  } else {
+    cardColor = "#fafad2";
+  }
+  colorizeCard(backlogCardContainer, cardColor);
+  
+}
+
+const applyBacklogCardModifications = (backlogCard, backlogIssueData) => {
+  applyIssueCardModifications(backlogCard, backlogIssueData, modifyBacklogCard);
+}
+
+const applyIssueCardModifications = (issueCard, issueData, modifyIssueCard) => {
+  modifyIssueCard(issueCard, issueData);
+  issueCard.setAttribute('modified-by-extension', 'true');
 }
 
 /**
@@ -93,20 +112,6 @@ const modifyIssueCards = async (issueCardSelector, getIssueKeyFromCard, issueFie
   
 }
 
-
-/**
- * 
- * @param {*} issueCardElement 
- * @param {*} issueData 
- */
-const applyBacklogCardModifications = (issueCardElement, issueData) => {  
-  if(issueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE]) {
-    colorizeCard(issueCardElement, "#c1e1c1");
-  } else {
-    colorizeCard(issueCardElement, "#fafad2");
-  }
-}
-
 /**
  * Gets the Jira issue key from the given backlog card
  * 
@@ -118,15 +123,6 @@ const getIssueKeyFromBacklogCard = backlogCard => {
   return backlogCard?.getAttribute("data-test-id").slice('software-backlog.card-list.card.content-container.'.length);
 }
 
-/**
- * Indicate the element has already been modified by the extension
- * 
- * @param {
- * } element 
- */
-const setModifiedByExtension = (element) => {
-  element.setAttribute('modified-by-extension', 'true');
-}
 
 /**
  * Observe mutations and update the backlog as necessary
