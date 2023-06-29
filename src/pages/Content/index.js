@@ -1,6 +1,6 @@
 import {getIssueData, JIRA_FIELD_IDS} from './jiraApiUtils'
 
-const MODIFIED_BY_EXTENSION_ATTRIBUTE_NAME = 'modified_by_extension';
+const MODIFIED_BY_EXTENSION_ATTRIBUTE_NAME = 'modified-by-extension';
 const BACKLOG_CARDS_SELECTOR = '[data-test-id="software-backlog.backlog-content.scrollable"] *[data-test-id^="software-backlog.card-list.card.content-container"]';
 
 console.log('jce: Content script running...')
@@ -37,16 +37,16 @@ const modifyBacklogCard = (backlogCard, backlogIssueData) => {
     cardColor = "#fafad2";
   }
   colorizeCard(backlogCardContainer, cardColor);
-  
 }
+
 
 const applyBacklogCardModifications = (backlogCard, backlogIssueData) => {
   applyIssueCardModifications(backlogCard, backlogIssueData, modifyBacklogCard);
 }
 
 const applyIssueCardModifications = (issueCard, issueData, modifyIssueCard) => {
+  issueCard.setAttribute(MODIFIED_BY_EXTENSION_ATTRIBUTE_NAME, 'true');
   modifyIssueCard(issueCard, issueData);
-  issueCard.setAttribute('modified-by-extension', 'true');
 }
 
 /**
@@ -90,6 +90,13 @@ const modifyBacklogCards = async () => {
 
 const modifyIssueCards = async (issueCardSelector, getIssueKeyFromCard, issueFields, applyIssueCardModification) => {
   const issueCards = getIssueCardsThatNeedModification(issueCardSelector);
+
+  issueCards.map(
+    issueCard => {
+      issueCard.setAttribute(MODIFIED_BY_EXTENSION_ATTRIBUTE_NAME, 'true');
+    }
+  );
+  
 
   const issueKeys = issueCards.map(
     issueCard => {
