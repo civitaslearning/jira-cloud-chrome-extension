@@ -1,7 +1,9 @@
 import {getIssueData, JIRA_FIELD_IDS} from './jiraApiUtils'
 
 const MODIFIED_BY_EXTENSION_ATTRIBUTE_NAME = 'modified-by-extension';
+
 const BACKLOG_CARDS_SELECTOR = '[data-test-id="software-backlog.backlog-content.scrollable"] *[data-test-id^="software-backlog.card-list.card.content-container"]';
+const BOARD_CARDS_SELECTOR = '*[data-test-id="software-board.board"] *[data-testid="platform-board-kit.ui.card.card"]';
 
 console.log('jce: Content script running...')
 
@@ -39,6 +41,21 @@ const modifyBacklogCard = (backlogCard, backlogIssueData) => {
   colorizeCard(backlogCardContainer, cardColor);
 }
 
+const modifyBoardCard = (boardCard, boardIssueData) => {
+  const backlogCardContainer = boardCard.querySelectorAll(`*[data-test-id='platform-card.ui.card.focus-container']`)?.item(0);
+
+  var cardColor;
+  if(boardIssueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE]) {
+    cardColor = "#c1e1c1";
+  } else {
+    cardColor = "#fafad2";
+  }
+  colorizeCard(backlogCardContainer, cardColor);
+}
+
+const applyBoardCardModifications = (boardCard, boardIssueData) => {
+  applyIssueCardModifications(boardCard, boardIssueData, modifyBoardCard);
+}
 
 const applyBacklogCardModifications = (backlogCard, backlogIssueData) => {
   applyIssueCardModifications(backlogCard, backlogIssueData, modifyBacklogCard);
@@ -69,6 +86,23 @@ const getIssueDataMap = issuesData => {
   );
 
   return issuesDataMap;
+}
+
+const modifyBoardCards = async () => {
+  return modifyIssueCards( 
+    BOARD_CARDS_SELECTOR,
+    getIssueKeyFromBoardCard,
+    [
+      JIRA_FIELD_IDS.ASSIGNEE,
+      JIRA_FIELD_IDS.KEY,
+      JIRA_FIELD_IDS.LABELS,
+      JIRA_FIELD_IDS.OWNER,
+      JIRA_FIELD_IDS.PAIR_ASSIGNEE, 
+      JIRA_FIELD_IDS.STORY_POINT_ESTIMATE,
+      JIRA_FIELD_IDS.TESTER
+    ],
+    applyBoardCardModifications
+  );
 }
 
 const modifyBacklogCards = async () => {
@@ -120,6 +154,18 @@ const modifyIssueCards = async (issueCardSelector, getIssueKeyFromCard, issueFie
 }
 
 /**
+ * Gets the Jira issue key from the given board card
+ * 
+ * @param {*} boardCard 
+ * @returns 
+ */
+const getIssueKeyFromBoardCard = boardCard => {
+  
+  const boardCardIssueKey = boardCard?.getAttribute("id").slice('card-'.length);
+  return boardCardIssueKey;
+}
+
+/**
  * Gets the Jira issue key from the given backlog card
  * 
  * @param {*} backlogCard 
@@ -139,6 +185,7 @@ const observer = new MutationObserver(
     mutations.map(
       mutation => {
         modifyBacklogCards();
+        modifyBoardCards();
       }       
     )
   }    
