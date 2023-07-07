@@ -14,7 +14,7 @@
   "content_scripts": [
     {
       "matches": ["https://civitaslearning.atlassian.net/jira/software/projects/DOPE/boards/23*"],
-      "run_at": "document_start",
+      "run_at": "document_end",
       "js": ["contentScript.bundle.js"],
       "css": ["content.styles.css"]
     }
