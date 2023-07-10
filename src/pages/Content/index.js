@@ -5,14 +5,14 @@ import { createRoot } from 'react-dom/client';
 
 // ak-jira-navigation
 
-import {getIssueData, JIRA_FIELD_IDS} from './jiraApiUtils'
+import {getIssueData, JIRA_FIELD_IDS, isBug, isDone} from './jiraApiUtils'
 
 const MODIFIED_BY_EXTENSION_ATTRIBUTE_NAME = 'modified-by-extension';
 
 const BACKLOG_CARDS_SELECTOR = '[data-test-id="software-backlog.backlog-content.scrollable"] *[data-test-id^="software-backlog.card-list.card.content-container"]';
 const BOARD_CARDS_SELECTOR = '*[data-test-id="software-board.board"] *[data-testid="platform-board-kit.ui.card.card"]';
 
-console.log('jce: Content script running 2..')
+console.log('jce: Content script running 4..')
 
 const colorizeCard = (issueCard, color) => {
   issueCard?.setAttribute("style", `background-color:${color}`);  
@@ -68,36 +68,27 @@ const insertBoardCardAlertsIndicator = (boardCard, alerts) => {
   alertsIndicatorRoot.render(<AlertsIndicator alerts={alerts} />);
 }
 
-const getBoardIssueAlerts = (boardIssueData) => {
+const getBoardIssueAlerts = (issueData) => {
   const boardIssueAlerts = [];
 
-  /*
-  JIRA_FIELD_IDS.ASSIGNEE,
-      JIRA_FIELD_IDS.KEY,
-      JIRA_FIELD_IDS.LABELS,
-      JIRA_FIELD_IDS.OWNER,
-      JIRA_FIELD_IDS.PAIR_ASSIGNEE, 
-      JIRA_FIELD_IDS.STORY_POINT_ESTIMATE,
-      JIRA_FIELD_IDS.TESTER
-      */
 
 
-  if(!boardIssueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE]) {
+  if(!issueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE] && !isBug(issueData)) {
 
     boardIssueAlerts.push(`Needs Estimate`);
   }
   
-  if(!boardIssueData.fields[JIRA_FIELD_IDS.OWNER]) {
+  if(!issueData.fields[JIRA_FIELD_IDS.OWNER]) {
 
     boardIssueAlerts.push(`Needs Owner`);
   }
 
-  if(!boardIssueData.fields[JIRA_FIELD_IDS.OWNER]) {
+  if(!issueData.fields[JIRA_FIELD_IDS.TESTER]) {
 
     boardIssueAlerts.push(`Needs Tester`);
   }
 
-  if(!boardIssueData.fields[JIRA_FIELD_IDS.ASSIGNEE]) {
+  if(!issueData.fields[JIRA_FIELD_IDS.ASSIGNEE] && !isDone(issueData)) {
 
     boardIssueAlerts.push(`Needs Assignee`);
   }
@@ -147,10 +138,12 @@ const modifyBoardCards = async () => {
     getIssueKeyFromBoardCard,
     [
       JIRA_FIELD_IDS.ASSIGNEE,
+      JIRA_FIELD_IDS.ISSUE_TYPE,
       JIRA_FIELD_IDS.KEY,
       JIRA_FIELD_IDS.LABELS,
       JIRA_FIELD_IDS.OWNER,
       JIRA_FIELD_IDS.PAIR_ASSIGNEE, 
+      JIRA_FIELD_IDS.STATUS, 
       JIRA_FIELD_IDS.STORY_POINT_ESTIMATE,
       JIRA_FIELD_IDS.TESTER
     ],
@@ -230,6 +223,8 @@ const getIssueKeyFromBacklogCard = backlogCard => {
 }
 
 
+
+
 /**
  * Observe mutations and update the backlog as necessary
  */
@@ -237,6 +232,27 @@ const observer = new MutationObserver(
   mutations => {  
     mutations.map(
       mutation => {
+        const removedNodes = mutation.removedNodes;
+/*
+        removedNodes.forEach(
+          removedNode => {
+            const nodeClass = removedNode.getAttribute(`class`);
+            if(nodeClass === ` css-12aymf5`) {
+              console.log(`jce: Issue dialog closed`);  
+
+              //const issueIdContainer = removedNode.querySelector("*[data-testid=`issue.views.issue-base.foundation.breadcrumbs.current-issue.item`]");
+              const issueIdContainer  = removedNode.querySelectorAll(`*[data-testid='issue.views.issue-base.foundation.breadcrumbs.current-issue.item']`)?.item(0);
+              console.log(`jce: foundIssueIdContainer: ${issueIdContainer}`);
+
+              // issue.views.issue-base.foundation.breadcrumbs.current-issue.item
+            }
+            console.log(`jce: Node Removed: ${nodeClass}`);
+            //  css-12aymf5
+          }
+        );
+          
+*/
+        
         const target = mutation.target;
         modifyBacklogCards();
         modifyBoardCards();
@@ -244,8 +260,8 @@ const observer = new MutationObserver(
 
         logAttributes(target);
         
-         console.log(`jce: Text Content1: ${target.textContent}`);
-         console.log(`Text Content: ${target.nodeValue}`);
+         //console.log(`jce: Text Content1: ${target.textContent}`);
+         //console.log(`Text Content: ${target.nodeValue}`);
 
          if(target.textContent.includes(`Projected`) && !target.textContent.includes(`Foo`)) {
           console.log(`jce: PARENT`); 

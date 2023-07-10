@@ -1,16 +1,44 @@
 import _ from 'lodash';
 
+const JIRA_FIELDS_ID = "fields";
 
 // Jira Field Ids
 export const JIRA_FIELD_IDS = {
    ASSIGNEE: "assignee",
+   ID:"id",
+   ISSUE_TYPE: "issuetype",
    KEY: "key",
    LABELS: "labels",
    OWNER: "customfield_10152",
    PAIR_ASSIGNEE: "customfield_10174", 
+   STATUS:"status",
+   STATUS_CATEGORY:"statusCategory",
    STORY_POINT_ESTIMATE: "customfield_10016",
-   TESTER: "customfield_10127"
-   
+   TESTER: "customfield_10127" 
+};
+
+export const JIRA_ISSUE_TYPES = {
+  BUG: "10044",
+  EPIC:"10045",
+  SPIKE:"10047",
+  STORY: "10042",
+  TASK: "10043"
+};
+
+export const JIRA_STATUS_CATEGORIES = {
+  DONE: 3,
+  IN_PROGRESS:4,
+  TO_DO:2
+};
+
+export const JIRA_STATUSES = {
+  DONE:"10087",
+  DUPLICATE:"10101",
+  IN_PROGRESS:"10086",
+  IN_QA:"10100",
+  READY_FOR_QA: "10099",
+  TO_DO: "10085",
+  WONT_DO:"10102"
 };
 
 /**
@@ -118,4 +146,14 @@ export const getIssueData = async (issueKeys, fields=[]) => {
 
   return issueData;
   
+}
+
+export const isBug = (issueData) => {
+  const isBug = issueData[JIRA_FIELDS_ID][JIRA_FIELD_IDS.ISSUE_TYPE][JIRA_FIELD_IDS.ID] === JIRA_ISSUE_TYPES.BUG;
+  return isBug;
+}
+
+export const isDone = (issueData) => {
+  const isDone = issueData[JIRA_FIELDS_ID][JIRA_FIELD_IDS.STATUS][JIRA_FIELD_IDS.STATUS_CATEGORY][JIRA_FIELD_IDS.ID] === JIRA_STATUS_CATEGORIES.DONE;
+  return isDone;
 }
