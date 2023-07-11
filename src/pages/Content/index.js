@@ -12,7 +12,12 @@ const MODIFIED_BY_EXTENSION_ATTRIBUTE_NAME = 'modified-by-extension';
 const BACKLOG_CARDS_SELECTOR = '[data-test-id="software-backlog.backlog-content.scrollable"] *[data-test-id^="software-backlog.card-list.card.content-container"]';
 const BOARD_CARDS_SELECTOR = '*[data-test-id="software-board.board"] *[data-testid="platform-board-kit.ui.card.card"]';
 
+
 console.log('jce: Content script running 4..')
+
+const getSelectorForBoardCard = (issueKey) => {
+  return BOARD_CARDS_SELECTOR + `[id="card-${issueKey}"]`;
+}
 
 const colorizeCard = (issueCard, color) => {
   issueCard?.setAttribute("style", `background-color:${color}`);  
@@ -23,7 +28,7 @@ const colorizeCard = (issueCard, color) => {
  * 
   * @returns 
  */
-const getIssueCardsThatNeedModification = (cardSelector) => {
+const selectIssueCards = (cardSelector) => {
   return [...document.querySelectorAll(`${cardSelector}:not([${MODIFIED_BY_EXTENSION_ATTRIBUTE_NAME}])`)];
 }
 
@@ -39,39 +44,53 @@ const modifyBacklogCard = (backlogCard, backlogIssueData) => {
   colorizeCard(backlogCardContainer, cardColor);
 }
 
-const modifyBoardCard = (boardCard, boardIssueData) => {
+const enhanceBoardCard = (boardCard, boardIssueData) => {
 
+  console.log(`jce: enhanceBoardCard 1`);
   var cardColor = "#c1e1c1";
 
   const alerts = getBoardIssueAlerts(boardIssueData);
 
+  console.log(`jce: enhanceBoardCard 2`);
   if(alerts.length) {
-    insertBoardCardAlertsIndicator(boardCard, alerts);
-
     cardColor = "#fafad2";
   }
+  updateBoardCardAlertsIndicator(boardCard, alerts);
 
   const backlogCardContainer = boardCard.querySelectorAll(`*[data-test-id='platform-card.ui.card.focus-container']`)?.item(0);
   colorizeCard(backlogCardContainer, cardColor);
 
 }
 
-const insertBoardCardAlertsIndicator = (boardCard, alerts) => {
+const updateBoardCardAlertsIndicator = (boardCard, alerts) => {
+  console.log(`jce: updateBoardCardAlertsIndicator 1`);
+  const ALERTS_INDICATOR_INSERTION_POINT_ID = 'ALERTS_INDICATOR_INSERTION_POINT_ID';
+
   const bottomRightCardTray = boardCard.getElementsByClassName(`y8i3hb-5 isqqjW`).item(0);
 
-  const alertsIndicatorInsertionPoint = document.createElement("div");
-  alertsIndicatorInsertionPoint.setAttribute("id", "alertsIndicatorInsertionPoint");
-  bottomRightCardTray.insertBefore(alertsIndicatorInsertionPoint, null);
-  
+  console.log(`jce: updateBoardCardAlertsIndicator 2`);
+  var alertsIndicatorInsertionPoint = boardCard.querySelector(`*[id='${ALERTS_INDICATOR_INSERTION_POINT_ID}']`);
 
-  const alertsIndicatorRoot = createRoot(alertsIndicatorInsertionPoint); // createRoot(container!) if you use TypeScript
-  alertsIndicatorRoot.render(<AlertsIndicator alerts={alerts} />);
+  if(!alertsIndicatorInsertionPoint) {
+    console.log(`jce: updateBoardCardAlertsIndicator 3`);
+    alertsIndicatorInsertionPoint = document.createElement("div");
+    alertsIndicatorInsertionPoint.setAttribute("id", ALERTS_INDICATOR_INSERTION_POINT_ID);
+    bottomRightCardTray.insertBefore(alertsIndicatorInsertionPoint, null);
+  } 
+
+  console.log(`jce: updateBoardCardAlertsIndicator 4`);
+  alertsIndicatorInsertionPoint.innerHTML = "";
+  
+  if(alerts.length) {
+    console.log(`jce: updateBoardCardAlertsIndicator 5`);
+    const alertsIndicatorRoot = createRoot(alertsIndicatorInsertionPoint);
+    alertsIndicatorRoot.render(<AlertsIndicator alerts={alerts} />);
+  }
+  
 }
 
 const getBoardIssueAlerts = (issueData) => {
   const boardIssueAlerts = [];
-
-
 
   if(!issueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE] && !isBug(issueData)) {
 
@@ -97,15 +116,15 @@ const getBoardIssueAlerts = (issueData) => {
   return boardIssueAlerts;
 }
 
-const applyBoardCardModifications = (boardCard, boardIssueData) => {
-  applyIssueCardModifications(boardCard, boardIssueData, modifyBoardCard);
+const applyBoardCardEnhancements = (boardCard, boardIssueData) => {
+  applyIssueCardEnhancements(boardCard, boardIssueData, enhanceBoardCard);
 }
 
-const applyBacklogCardModifications = (backlogCard, backlogIssueData) => {
-  applyIssueCardModifications(backlogCard, backlogIssueData, modifyBacklogCard);
+const applyBacklogCardEnhancements = (backlogCard, backlogIssueData) => {
+  applyIssueCardEnhancements(backlogCard, backlogIssueData, modifyBacklogCard);
 }
 
-const applyIssueCardModifications = (issueCard, issueData, modifyIssueCard) => {
+const applyIssueCardEnhancements = (issueCard, issueData, modifyIssueCard) => {
   issueCard.setAttribute(MODIFIED_BY_EXTENSION_ATTRIBUTE_NAME, 'true');
   modifyIssueCard(issueCard, issueData);
 }
@@ -132,9 +151,38 @@ const getIssueDataMap = issuesData => {
   return issuesDataMap;
 }
 
-const modifyBoardCards = async () => {
-  return modifyIssueCards( 
-    BOARD_CARDS_SELECTOR,
+
+
+const enhanceBacklogCards = async (backlogCards) => {
+  return enhanceIssueCards( 
+    backlogCards,
+    getIssueKeyFromBacklogCard,
+    [
+      JIRA_FIELD_IDS.ASSIGNEE,
+      JIRA_FIELD_IDS.ISSUE_TYPE,
+      JIRA_FIELD_IDS.KEY,
+      JIRA_FIELD_IDS.LABELS,
+      JIRA_FIELD_IDS.OWNER,
+      JIRA_FIELD_IDS.PAIR_ASSIGNEE, 
+      JIRA_FIELD_IDS.STATUS, 
+      JIRA_FIELD_IDS.STORY_POINT_ESTIMATE,
+      JIRA_FIELD_IDS.TESTER
+    ],
+    applyBacklogCardEnhancements
+  );
+}
+
+const enhanceBoard = async () => {
+  return enhanceSelectedIssueCards(BOARD_CARDS_SELECTOR, enhanceBoardCards);
+}
+
+const enhanceBacklog = async () => {
+  return enhanceSelectedIssueCards(BACKLOG_CARDS_SELECTOR, enhanceBacklogCards);
+}
+
+const enhanceBoardCards = async (boardCards) => {
+  return enhanceIssueCards( 
+    boardCards,
     getIssueKeyFromBoardCard,
     [
       JIRA_FIELD_IDS.ASSIGNEE,
@@ -147,29 +195,20 @@ const modifyBoardCards = async () => {
       JIRA_FIELD_IDS.STORY_POINT_ESTIMATE,
       JIRA_FIELD_IDS.TESTER
     ],
-    applyBoardCardModifications
+    applyBoardCardEnhancements
   );
 }
 
-const modifyBacklogCards = async () => {
-  return modifyIssueCards( 
-    BACKLOG_CARDS_SELECTOR, 
-    getIssueKeyFromBacklogCard,
-    [
-      JIRA_FIELD_IDS.ASSIGNEE,
-      JIRA_FIELD_IDS.KEY,
-      JIRA_FIELD_IDS.LABELS,
-      JIRA_FIELD_IDS.OWNER,
-      JIRA_FIELD_IDS.PAIR_ASSIGNEE, 
-      JIRA_FIELD_IDS.STORY_POINT_ESTIMATE,
-      JIRA_FIELD_IDS.TESTER
-    ],
-    applyBacklogCardModifications
-  );
+const enhanceSelectedIssueCards = (issueCardSelector, issueCardsModifier) => {
+  const issueCards = selectIssueCards(issueCardSelector);
+
+  issueCardsModifier(issueCards);
 }
 
-const modifyIssueCards = async (issueCardSelector, getIssueKeyFromCard, issueFields, applyIssueCardModification) => {
-  const issueCards = getIssueCardsThatNeedModification(issueCardSelector);
+
+
+const enhanceIssueCards = async (issueCards, getIssueKeyFromCard, issueFields, applyIssueCardModification) => {
+  
 
   issueCards.map(
     issueCard => {
@@ -195,9 +234,13 @@ const modifyIssueCards = async (issueCardSelector, getIssueKeyFromCard, issueFie
     issueCard => {
       applyIssueCardModification(issueCard, issueDataMap.get(getIssueKeyFromCard(issueCard)));
     }
-  )
-  
+  )  
 }
+
+const getBoardCardFromIssueKey = (issueKey) => {
+  return document.querySelector(getSelectorForBoardCard(issueKey));
+}
+
 
 /**
  * Gets the Jira issue key from the given board card
@@ -206,7 +249,7 @@ const modifyIssueCards = async (issueCardSelector, getIssueKeyFromCard, issueFie
  * @returns 
  */
 const getIssueKeyFromBoardCard = boardCard => {
-  
+  console.log(`jce: getIssueKeyFromBoardCard getAttribute ${boardCard}`);
   const boardCardIssueKey = boardCard?.getAttribute("id").slice('card-'.length);
   return boardCardIssueKey;
 }
@@ -218,7 +261,7 @@ const getIssueKeyFromBoardCard = boardCard => {
  * @returns 
  */
 const getIssueKeyFromBacklogCard = backlogCard => {
-  
+  console.log(`jce: getIssueKeyFromBacklogCard`);
   return backlogCard?.getAttribute("data-test-id").slice('software-backlog.card-list.card.content-container.'.length);
 }
 
@@ -233,16 +276,26 @@ const observer = new MutationObserver(
     mutations.map(
       mutation => {
         const removedNodes = mutation.removedNodes;
-/*
+
         removedNodes.forEach(
           removedNode => {
-            const nodeClass = removedNode.getAttribute(`class`);
+            console.log(`jce: MutationObserver getAttribute ${removedNode}`);
+            
+
+            
+            const nodeClass = removedNode?.getAttribute(`class`);
+            
+            //const nodeClass = removedNode?.getAttribute(`class`);
             if(nodeClass === ` css-12aymf5`) {
               console.log(`jce: Issue dialog closed`);  
 
               //const issueIdContainer = removedNode.querySelector("*[data-testid=`issue.views.issue-base.foundation.breadcrumbs.current-issue.item`]");
-              const issueIdContainer  = removedNode.querySelectorAll(`*[data-testid='issue.views.issue-base.foundation.breadcrumbs.current-issue.item']`)?.item(0);
-              console.log(`jce: foundIssueIdContainer: ${issueIdContainer}`);
+              const issueKey  = removedNode.querySelectorAll(`*[data-testid='issue.views.issue-base.foundation.breadcrumbs.current-issue.item'] span`)?.item(0).textContent;
+              console.log(`jce: foundIssueIdContainer: ${issueKey}`);
+
+              enhanceBoardCards([getBoardCardFromIssueKey(issueKey)]);
+
+              console.log(`jce: foundIssueIdContainer 2: ${issueKey}`);
 
               // issue.views.issue-base.foundation.breadcrumbs.current-issue.item
             }
@@ -251,11 +304,11 @@ const observer = new MutationObserver(
           }
         );
           
-*/
+
         
         const target = mutation.target;
-        modifyBacklogCards();
-        modifyBoardCards();
+        enhanceBacklog();
+        enhanceBoard();
         console.log(`jce: handling mutation: node type2: ${target}`);
 
         logAttributes(target);
