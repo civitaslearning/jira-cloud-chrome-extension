@@ -66,7 +66,8 @@ const updateBoardCardAlertsIndicator = (boardCard, alerts) => {
   console.log(`jce: updateBoardCardAlertsIndicator 1`);
   const ALERTS_INDICATOR_INSERTION_POINT_ID = 'ALERTS_INDICATOR_INSERTION_POINT_ID';
 
-  const bottomRightCardTray = boardCard.getElementsByClassName(`y8i3hb-5 isqqjW`).item(0);
+  
+  const bottomRightCardTray = boardCard.getElementsByClassName(`y8i3hb-5`).item(0);
 
   console.log(`jce: updateBoardCardAlertsIndicator 2`);
   var alertsIndicatorInsertionPoint = boardCard.querySelector(`*[id='${ALERTS_INDICATOR_INSERTION_POINT_ID}']`);
