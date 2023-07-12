@@ -3,6 +3,12 @@ import AlertsIndicator from './AlertsIndicator';
 import { createRoot } from 'react-dom/client';
 
 
+export const JIRA_VIEW = {
+  BACKLOG: "backlog",
+  BOARD:"board",
+  UNKNOWN:"unknown"
+};
+
 // ak-jira-navigation
 
 import {getIssueData, JIRA_FIELD_IDS, isBug, isDone} from './jiraApiUtils'
@@ -13,7 +19,27 @@ const BACKLOG_CARDS_SELECTOR = '[data-test-id="software-backlog.backlog-content.
 const BOARD_CARDS_SELECTOR = '*[data-test-id="software-board.board"] *[data-testid="platform-board-kit.ui.card.card"]';
 
 
-console.log('jce: Content script running 4..')
+console.log('jce: Content script running...')
+
+const getJiraView = () => {
+  if (isBacklogView()) {
+    return JIRA_VIEW.BACKLOG;
+  }
+
+  if (isBoardView()) {
+    return JIRA_VIEW.BOARD;
+  }
+
+  return JIRA_VIEW.UNKNOWN;
+}
+
+const isBoardView = () => {
+  return !!document.querySelector('[data-test-id="software-board.board"]');
+}
+
+const isBacklogView = () => {
+  return !!document.querySelector('[data-test-id="software-backlog.backlog-content.scrollable"]');
+}
 
 const getSelectorForBoardCard = (issueKey) => {
   return BOARD_CARDS_SELECTOR + `[id="card-${issueKey}"]`;
@@ -305,36 +331,18 @@ const observer = new MutationObserver(
           }
         );
           
-
-        
-        const target = mutation.target;
-        enhanceBacklog();
-        enhanceBoard();
-        console.log(`jce: handling mutation: node type2: ${target}`);
-
-        logAttributes(target);
-        
-         //console.log(`jce: Text Content1: ${target.textContent}`);
-         //console.log(`Text Content: ${target.nodeValue}`);
-
-         if(target.textContent.includes(`Projected`) && !target.textContent.includes(`Foo`)) {
-          console.log(`jce: PARENT`); 
-          logAttributes(target.parentNode);          
+        switch(getJiraView()) {
+          case JIRA_VIEW.BACKLOG:
+            enhanceBacklog(mutation);  
+            break;
+          case JIRA_VIEW.BOARD:
+            enhanceBoard(mutation);  
+            break;
         }
       }       
     )
   }    
 );
-
-const logAttributes = node => {
-  const attributes = node.attributes;
-
-  if(attributes) {
-    for (const attr of attributes) {
-      console.log(`jce: ${attr.name} -> ${attr.value}`);
-    }
-  }
-}
 
 const target = document.querySelector("html");
 const config = { childList:true, subtree:true};
