@@ -116,7 +116,7 @@ const updateBoardCardAlertsIndicator = (boardCard, alerts) => {
   
 }
 
-const positionBoardCardAlertsIndicator = (boardCard, alertsIndicatorInsertionPoint) => {
+const positionBoardCardAlertsIndicator = (alertsIndicatorInsertionPoint) => {
 
 }
 
@@ -241,45 +241,31 @@ const handleBoardIssueEditorClosing = (mutation) => {
   );
 }
 
-const handleAddedBoardNodes = (addedBoardNodes) => {
-  addedBoardNodes.forEach(
-    addedNode => {
-      console.log(`jce: NODE ADDED`);
-      describeNode(addedNode);
-
-      if(addedNode.nodeType === Node.ELEMENT_NODE) {
-
-        // Jira dynamically adds an assignee avatar button on hover which causes the alert indicator (if any) to move to the left of the avatar if
-        // we don't handle it
-        if(
-          addedNode.closest(`[data-testid="software-board.board-container.board.card-container.card.assignee-field.button"]`)                 
-        ) {
-          const boardCard = getClosestBoardCard(addedNode);
-          const alertsIndicator = boardCard.querySelector(`[id="ALERTS_INDICATOR_INSERTION_POINT_ID"]`);
-
-          if(alertsIndicator) {
-            const bottomRightCardTray = boardCard.getElementsByClassName(`y8i3hb-5`).item(0);
-
-            bottomRightCardTray.insertAdjacentElement("beforeend", alertsIndicator);
-
-            console.log(`jce: AVATAR ADDED 2:`);
-          }
-        }
-      }
-    }
-  );
-}
-
-
 const handleBoardCardAlertIndicatorOutOfPlace = (mutation) => {
-  
+  const boardCard = getClosestBoardCard(mutation.target);
+
+  if(!boardCard) {
+    return;
+  }
+  const alertsIndicatorInsertionPoint = getBoardCardAlertsIndicatorInsertionPoint(boardCard);
+
+  if(alertsIndicatorInsertionPoint) {
+
+    const alertsIndicatorInsertionPointParent = alertsIndicatorInsertionPoint.parentElement;
+
+    if(alertsIndicatorInsertionPointParent.lastElementChild != alertsIndicatorInsertionPoint) {
+
+      alertsIndicatorInsertionPointParent.insertAdjacentElement("beforeend", alertsIndicatorInsertionPoint);
+    }
+  }
 }
 
+const getBoardCardAlertsIndicatorInsertionPoint = boardCard => {
+  return boardCard?.querySelector(`[id="ALERTS_INDICATOR_INSERTION_POINT_ID"]`);
+}
 
 const handleBoardViewMutation = async (mutation) => {
-  
-  //handleBoardIssueEditorClosing(mutation);
-  handleAddedBoardNodes(mutation.addedNodes);
+  handleBoardCardAlertIndicatorOutOfPlace(mutation);
 
   enhanceSelectedIssueCards(BOARD_CARDS_SELECTOR, enhanceBoardCards);
 }
