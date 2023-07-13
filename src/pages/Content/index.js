@@ -72,7 +72,7 @@ const modifyBacklogCard = (backlogCard, backlogIssueData) => {
 
 const enhanceBoardCard = (boardCard, boardIssueData) => {
 
-  console.log(`jce: enhanceBoardCard 1`);
+  console.log(`jce: enhanceBoardCard 1 :${boardCard}`);
   var cardColor = "#c1e1c1";
 
   const alerts = getBoardIssueAlerts(boardIssueData);
@@ -98,22 +98,26 @@ const updateBoardCardAlertsIndicator = (boardCard, alerts) => {
   console.log(`jce: updateBoardCardAlertsIndicator 2`);
   var alertsIndicatorInsertionPoint = boardCard.querySelector(`*[id='${ALERTS_INDICATOR_INSERTION_POINT_ID}']`);
 
-  if(!alertsIndicatorInsertionPoint) {
+  if(alertsIndicatorInsertionPoint) {
+    alertsIndicatorInsertionPoint.remove();
+  }
+  
+  if(alerts.length) {
     console.log(`jce: updateBoardCardAlertsIndicator 3`);
     alertsIndicatorInsertionPoint = document.createElement("div");
     alertsIndicatorInsertionPoint.setAttribute("id", ALERTS_INDICATOR_INSERTION_POINT_ID);
-    bottomRightCardTray.insertBefore(alertsIndicatorInsertionPoint, null);
-  } 
+    //bottomRightCardTray.insertBefore(alertsIndicatorInsertionPoint, null);
+    bottomRightCardTray.insertAdjacentElement(`beforeend`, alertsIndicatorInsertionPoint);
 
-  console.log(`jce: updateBoardCardAlertsIndicator 4`);
-  alertsIndicatorInsertionPoint.innerHTML = "";
-  
-  if(alerts.length) {
     console.log(`jce: updateBoardCardAlertsIndicator 5`);
     const alertsIndicatorRoot = createRoot(alertsIndicatorInsertionPoint);
     alertsIndicatorRoot.render(<AlertsIndicator alerts={alerts} />);
   }
   
+}
+
+const positionBoardCardAlertsIndicator = (boardCard, alertsIndicatorInsertionPoint) => {
+
 }
 
 const getBoardIssueAlerts = (issueData) => {
@@ -199,8 +203,85 @@ const enhanceBacklogCards = async (backlogCards) => {
   );
 }
 
-const enhanceBoard = async () => {
-  return enhanceSelectedIssueCards(BOARD_CARDS_SELECTOR, enhanceBoardCards);
+const describeNode = (node) => {
+  console.log(`  jce: Node: ${node.nodeName} ${node.nodeType}`);
+  if(node.attributes) {
+    for (const attr of node.attributes) {
+      console.log(`     ${attr.name}=${attr.value}`);
+    }
+  }
+}
+
+const handleBoardIssueEditorClosing = (mutation) => {
+  if(mutation.addedNodes.length) {
+    mutation.addedNodes.forEach(
+      addedNode => {
+        if(addedNode.nodeType === Node.ELEMENT_NODE) {
+          console.log(`jce: NODE ADDED`);
+          describeNode(addedNode);
+        }
+      }
+    )
+  }
+  mutation.removedNodes.forEach(
+    removedNode => {
+      console.log(`jce: NODE REMOVED`);
+      describeNode(removedNode);
+      
+      if(removedNode.nodeType === Node.ELEMENT_NODE && removedNode.getAttribute(`class`) === ` css-12aymf5`) {
+        console.log(`jce: Board Issue Editor Closing Foo`);
+
+        //const issueIdContainer = removedNode.querySelector("*[data-testid=`issue.views.issue-base.foundation.breadcrumbs.current-issue.item`]");
+        const issueKey  = removedNode.querySelector(`*[data-testid='issue.views.issue-base.foundation.breadcrumbs.current-issue.item'] span`).textContent;
+        console.log(`jce: foundIssueIdContainer: ${issueKey}`);
+
+        enhanceBoardCards([getBoardCardFromIssueKey(issueKey)]);
+      }
+    }
+  );
+}
+
+const handleAddedBoardNodes = (addedBoardNodes) => {
+  addedBoardNodes.forEach(
+    addedNode => {
+      console.log(`jce: NODE ADDED`);
+      describeNode(addedNode);
+
+      if(addedNode.nodeType === Node.ELEMENT_NODE) {
+
+        // Jira dynamically adds an assignee avatar button on hover which causes the alert indicator (if any) to move to the left of the avatar if
+        // we don't handle it
+        if(
+          addedNode.closest(`[data-testid="software-board.board-container.board.card-container.card.assignee-field.button"]`)                 
+        ) {
+          const boardCard = getClosestBoardCard(addedNode);
+          const alertsIndicator = boardCard.querySelector(`[id="ALERTS_INDICATOR_INSERTION_POINT_ID"]`);
+
+          if(alertsIndicator) {
+            const bottomRightCardTray = boardCard.getElementsByClassName(`y8i3hb-5`).item(0);
+
+            bottomRightCardTray.insertAdjacentElement("beforeend", alertsIndicator);
+
+            console.log(`jce: AVATAR ADDED 2:`);
+          }
+        }
+      }
+    }
+  );
+}
+
+
+const handleBoardCardAlertIndicatorOutOfPlace = (mutation) => {
+  
+}
+
+
+const handleBoardViewMutation = async (mutation) => {
+  
+  //handleBoardIssueEditorClosing(mutation);
+  handleAddedBoardNodes(mutation.addedNodes);
+
+  enhanceSelectedIssueCards(BOARD_CARDS_SELECTOR, enhanceBoardCards);
 }
 
 const enhanceBacklog = async () => {
@@ -281,6 +362,10 @@ const getIssueKeyFromBoardCard = boardCard => {
   return boardCardIssueKey;
 }
 
+const getClosestBoardCard = boardCardElement => {
+  return boardCardElement.closest(`[id^="card-"][data-test-id="platform-board-kit.ui.card.card"]`);
+}
+
 /**
  * Gets the Jira issue key from the given backlog card
  * 
@@ -302,6 +387,7 @@ const observer = new MutationObserver(
   mutations => {  
     mutations.map(
       mutation => {
+        /*
         const removedNodes = mutation.removedNodes;
 
         removedNodes.forEach(
@@ -330,13 +416,13 @@ const observer = new MutationObserver(
             //  css-12aymf5
           }
         );
-          
+          */
         switch(getJiraView()) {
           case JIRA_VIEW.BACKLOG:
             enhanceBacklog(mutation);  
             break;
           case JIRA_VIEW.BOARD:
-            enhanceBoard(mutation);  
+            handleBoardViewMutation(mutation);  
             break;
         }
       }       
