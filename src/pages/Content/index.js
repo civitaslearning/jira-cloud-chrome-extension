@@ -139,11 +139,6 @@ const positionAlertsIndicator = (boardCard, alertsIndicatorInsertionPoint) => {
 const updateBoardCardAlertsIndicator = (boardCard, alerts) => {
   console.log(`jce: updateBoardCardAlertsIndicator 1`);
   
-
-  
-  const bottomRightCardTray = boardCard.getElementsByClassName(`y8i3hb-5`).item(0);
-
-  console.log(`jce: updateBoardCardAlertsIndicator 2`);
   var alertsIndicatorInsertionPoint = getBoardCardAlertsIndicatorInsertionPoint(boardCard);
 
   if(alertsIndicatorInsertionPoint) {
@@ -164,9 +159,6 @@ const updateBoardCardAlertsIndicator = (boardCard, alerts) => {
   }
   
 }
-
-// software-board.common.fields.assignee-field-static.avatar-wrapper
-//software-board.board-container.board.card-container.card.assignee-field.button
 
 const getBoardIssueAlerts = (issueData) => {
   const boardIssueAlerts = [];
