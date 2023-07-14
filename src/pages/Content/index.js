@@ -1,6 +1,7 @@
 import React from 'react';
 import AlertsIndicator from './AlertsIndicator';
 import { createRoot } from 'react-dom/client';
+import { enhanceIssueCards, enhanceSelectedIssueCards, applyIssueCardEnhancements } from './jiraViewEnhancer';
 
 
 export const JIRA_VIEW = {
@@ -9,9 +10,8 @@ export const JIRA_VIEW = {
   UNKNOWN:"unknown"
 };
 
-// ak-jira-navigation
 
-import {getIssueData, JIRA_FIELD_IDS, isBug, isDone} from './jiraApiUtils'
+import {JIRA_FIELD_IDS, isBug, isDone} from './jiraApiUtils'
 
 const ENHANCED_BY_EXTENSION_ATTRIBUTE_NAME = 'ENHANCED_BY_EXTENSION';
 const ALERTS_INDICATOR_INSERTION_POINT_ID = 'ALERTS_INDICATOR_INSERTION_POINT_ID';
@@ -195,34 +195,6 @@ const applyBacklogCardEnhancements = (backlogCard, backlogIssueData) => {
   applyIssueCardEnhancements(backlogCard, backlogIssueData, enhanceBacklogCard);
 }
 
-const applyIssueCardEnhancements = (issueCard, issueData, modifyIssueCard) => {
-  issueCard.setAttribute(ENHANCED_BY_EXTENSION_ATTRIBUTE_NAME, 'true');
-  modifyIssueCard(issueCard, issueData);
-}
-
-/**
- * Gets a map of jira issue data keyed by the issue key
- * 
- * @param {*} issuesData 
- */
-const getIssueDataMap = issuesData => {
-  const issuesDataMap = new Map();
-
-  issuesData.map(
-    issueData => {
-      const issueKey = issueData.key;
-
-      issuesDataMap.set(
-        issueKey,
-        issueData
-      );
-    }
-  );
-
-  return issuesDataMap;
-}
-
-
 
 const enhanceBacklogCards = async (backlogCards) => {
   return enhanceIssueCards( 
@@ -333,43 +305,6 @@ const enhanceBoardCards = async (boardCards) => {
   );
 }
 
-const enhanceSelectedIssueCards = (issueCardSelector, issueCardsModifier) => {
-  const issueCards = getUnenhancedIssueCards(issueCardSelector);
-
-  issueCardsModifier(issueCards);
-}
-
-
-
-const enhanceIssueCards = async (issueCards, getIssueKeyFromCard, issueFields, applyIssueCardModification) => {
-  
-
-  issueCards.map(
-    issueCard => {
-      issueCard.setAttribute(ENHANCED_BY_EXTENSION_ATTRIBUTE_NAME, 'true');
-    }
-  );
-  
-
-  const issueKeys = issueCards.map(
-    issueCard => {
-      return getIssueKeyFromCard(issueCard);
-    }
-  );
-
-  const issueDataMap = getIssueDataMap(
-      await getIssueData(
-        issueKeys,
-        issueFields
-      )
-    );
-
-  issueCards.map(
-    issueCard => {
-      applyIssueCardModification(issueCard, issueDataMap.get(getIssueKeyFromCard(issueCard)));
-    }
-  )  
-}
 
 /**
  * Returns the board card for the specified issue key
@@ -413,8 +348,6 @@ const getIssueKeyFromBacklogCard = backlogCard => {
   console.log(`jce: getIssueKeyFromBacklogCard`);
   return backlogCard?.getAttribute("data-test-id").slice('software-backlog.card-list.card.content-container.'.length);
 }
-
-
 
 
 /**
