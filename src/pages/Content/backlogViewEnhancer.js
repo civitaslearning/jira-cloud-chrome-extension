@@ -19,7 +19,9 @@ export const handleBacklogViewMutation = async (mutation) => {
   const BACKLOG_CARDS_SELECTOR = '[data-test-id="software-backlog.backlog-content.scrollable"] *[data-test-id^="software-backlog.card-list.card.content-container"]';
   enhanceSelectedIssueCards(BACKLOG_CARDS_SELECTOR, enhanceBacklogCards);
 
-  handleBacklogIssuedEditor(mutation);
+  handleBacklogIssueEditor(mutation);
+
+  handleInlineBacklogIssueEdits(mutation);
 }
 
 /**
@@ -102,7 +104,7 @@ const colorizeCard = (issueCard, color) => {
  * @param {*} mutation 
  * @returns 
  */
-const handleBacklogIssuedEditor = (mutation) => {
+const handleBacklogIssueEditor = (mutation) => {
   const element = mutation.target;
 
   const backlogIssueEditor = element.closest(`[data-testid="software-backlog.detail-view.issue-wrapper.backlog-issue"]`);
@@ -156,6 +158,47 @@ const getBacklogCardFromIssueKey = (issueKey) => {
 const getSelectorForBacklogCard = (issueKey) => {
   return `[data-test-id="software-backlog.card-list.card.content-container.${issueKey}"]`;
 }
+
+/**
+ * Handles inline backlog issue edits
+ * 
+ * @param {*} mutation 
+ * @returns 
+ */
+const handleInlineBacklogIssueEdits = (mutation) => {
+  const element = mutation.target;
+
+  const backlogCard = element.closest(`[data-test-id^="software-backlog.card-list.card.content-container."]`);
+
+  // If the mutation was not to backlog card, no-op
+  if(!backlogCard) {
+    return;
+  }
+
+  // If an <INPUT> element has been removed from the backlog backlog card, this implies that the user has
+  // finished editing an attribute of the issue. NOTE: This *doesn't* imply that the user actually made a change, 
+  // but for now we just unconditionally update the corrresponding issue card
+  const removedNodes = mutation.removedNodes;
+  if(removedNodes.length) { 
+    removedNodes.forEach(
+      node => {
+        // If an <INPUT> element was removed from the backlog issue editor...
+        if(inputNode) {
+          
+          // Get the key for the issue currently being edited
+          const issueKey = getIssueKeyFromBacklogCard(backlogCard);
+
+          // Update the corresponding backloh issue card
+          enhanceBacklogCards([getBacklogCardFromIssueKey(issueKey)]);
+        }
+      }
+    );
+    
+  } 
+}
+
+
+
 
 const describeNode = (node) => {
   console.log(`  jce: Node: ${node.nodeName} ${node.nodeType}`);
