@@ -80,7 +80,10 @@ const enhanceBacklogCard = (backlogCard, backlogIssueData) => {
   const backlogCardContainer = backlogCard.querySelectorAll(`*[data-testid='software-backlog.card-list.card.card-contents.card-container']`)?.item(0);
 
   var cardColor;
-  if(backlogIssueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE]) {
+  if(backlogIssueData.fields["labels"].includes("needs_info")){
+    cardColor = "#ffdbff";
+  }
+  else if(backlogIssueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE]) {
     cardColor = "#c1e1c1";
   } else if(backlogIssueData.fields["labels"].includes("ready_to_estimate")){
     cardColor = "#daf0f7";

@@ -211,9 +211,39 @@ const handleBoardIssueEditorDialogClosing = (mutation) => {
         console.log(`jce: foundIssueIdContainer: ${issueKey}`);
 
         enhanceBoardCards([getBoardCardFromIssueKey(issueKey)]);
+        
+        //foo();
       }
     }
   );
+}
+
+const foo = async () => {
+  (await waitForElementToExist('[class="fiolfg-1 eYRRDc css-2b74hb"]')).click();
+  console.log('The element exists 1');
+  (await waitForElementToExist('[data-test-id="filters.common.ui.list.menu.list"]')).click();
+  console.log('The element exists 2');
+  (await waitForElementToExist('[data-testid="software-board.header.title.container"]')).click();
+}
+
+function waitForElementToExist(selector) {
+  return new Promise(resolve => {
+    if (document.querySelector(selector)) {
+      return resolve(document.querySelector(selector));
+    }
+
+    const observer = new MutationObserver(() => {
+      if (document.querySelector(selector)) {
+        resolve(document.querySelector(selector));
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+    });
+  });
 }
 
 /**
