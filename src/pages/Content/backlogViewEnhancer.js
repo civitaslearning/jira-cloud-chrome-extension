@@ -82,6 +82,8 @@ const enhanceBacklogCard = (backlogCard, backlogIssueData) => {
   var cardColor;
   if(backlogIssueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE]) {
     cardColor = "#c1e1c1";
+  } else if(backlogIssueData.fields["labels"].includes("ready_to_estimate")){
+    cardColor = "#daf0f7";
   } else {
     cardColor = "#fafad2";
   }
@@ -182,6 +184,8 @@ const handleInlineBacklogIssueEdits = (mutation) => {
   if(removedNodes.length) { 
     removedNodes.forEach(
       node => {
+        const inputNode = node.querySelector(`input`);
+        
         // If an <INPUT> element was removed from the backlog issue editor...
         if(inputNode) {
           
