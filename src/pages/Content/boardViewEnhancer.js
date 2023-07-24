@@ -1,10 +1,12 @@
 import React from 'react';
 import AlertsIndicator from './AlertsIndicator';
+import UserAvatar from './UserAvatar';
 import { createRoot } from 'react-dom/client';
 import {JIRA_FIELD_IDS, isBug, isDone} from './jiraApiUtils'
 import { enhanceIssueCards, enhanceSelectedIssueCards, applyIssueCardEnhancements } from './jiraViewEnhancer';
 
 const BOARD_CARDS_SELECTOR = '*[data-test-id="software-board.board"] *[data-testid="platform-board-kit.ui.card.card"]';
+
 const ALERTS_INDICATOR_WRAPPER_ID = 'ALERTS_INDICATOR_WRAPPER_ID';
 
 /**
@@ -95,10 +97,56 @@ const enhanceBoardCard = (boardCard, boardIssueData) => {
     cardColor = "#fafad2";
   }
   updateBoardCardAlertsIndicator(boardCard, alerts);
+  updateAvatar(JIRA_FIELD_IDS.TESTER, "Tester", boardCard, boardIssueData);
+  updateAvatar(JIRA_FIELD_IDS.OWNER, "Owner", boardCard, boardIssueData);
 
   const backlogCardContainer = boardCard.querySelectorAll(`*[data-test-id='platform-card.ui.card.focus-container']`)?.item(0);
   colorizeCard(backlogCardContainer, cardColor);
 
+}
+
+/**
+ * Positions the avatar on the board card
+ * 
+ * @param {*} boardCard 
+ * @param {*} avatarWrapper 
+ */
+const positionAvatar = (boardCard, avatarWrapper) => {
+  
+  var avatarParent = null;
+  avatarParent = boardCard.querySelector('[data-testid="software-board.common.fields.assignee-field-static.avatar-wrapper"]')?.parentElement;
+
+  if(!avatarParent) {
+    avatarParent = boardCard.querySelector('[data-testid="software-board.board-container.board.card-container.card.assignee-field.button"]')?.parentElement;
+  }
+
+  avatarParent.setAttribute("style", `gap: 0px`);  
+
+  avatarParent.insertAdjacentElement(`afterbegin`, avatarWrapper);
+}
+
+const getBoardCardAvatarWrapper = (boardCard, fieldId) => {
+  return boardCard?.querySelector(`[id="${fieldId}"]`);
+}
+
+const updateAvatar = (jiraFieldId, fieldDisplayName, boardCard, issueData) => {
+  console.log(`jce: updateAvatar 1`);
+
+  var avatarWrapper = getBoardCardAvatarWrapper(boardCard, jiraFieldId);
+
+  if(avatarWrapper) {
+    avatarWrapper.remove();
+  }
+
+  avatarWrapper = document.createElement("div");
+  avatarWrapper.setAttribute("id", jiraFieldId);
+  
+  positionAvatar(boardCard, avatarWrapper);
+
+  console.log(`jce: updateAvatar: ${JSON.stringify(issueData.fields, null, 2)}`);
+
+  const avatarRoot = createRoot(avatarWrapper);
+  avatarRoot.render(<UserAvatar fieldDisplayName={fieldDisplayName} userData={issueData.fields[jiraFieldId]?.[0]}/>);
 }
 
 /**
@@ -155,6 +203,7 @@ const updateBoardCardAlertsIndicator = (boardCard, alerts) => {
     console.log(`jce: updateBoardCardAlertsIndicator 3`);
     alertsIndicatorWrapper = document.createElement("div");
     alertsIndicatorWrapper.setAttribute("id", ALERTS_INDICATOR_WRAPPER_ID);
+    alertsIndicatorWrapper.setAttribute("style", "margin-left: 4px;");
     
     positionAlertsIndicator(boardCard, alertsIndicatorWrapper);
 
@@ -173,6 +222,7 @@ const updateBoardCardAlertsIndicator = (boardCard, alerts) => {
 const getBoardCardAlertsIndicatorWrapper = boardCard => {
   return boardCard?.querySelector(`[id="${ALERTS_INDICATOR_WRAPPER_ID}"]`);
 }
+
 
 /**
  * Positions the alert indicator to the right of the board card assignee avatar
@@ -212,7 +262,6 @@ const handleBoardIssueEditorDialogClosing = (mutation) => {
 
         enhanceBoardCards([getBoardCardFromIssueKey(issueKey)]);
         
-        //foo();
       }
     }
   );
