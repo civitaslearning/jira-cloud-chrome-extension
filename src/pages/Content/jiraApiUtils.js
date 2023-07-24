@@ -41,6 +41,10 @@ export const JIRA_STATUSES = {
   WONT_DO:"10102"
 };
 
+export const LABELS = {
+  WONT_ESTIMATE: "wont_estimate"
+};
+
 /**
  * Issue a generic Jira API request
  * @param {*} param0 
@@ -153,7 +157,14 @@ export const isBug = (issueData) => {
   return isBug;
 }
 
+export const isReadyForQA = (issueData) => {
+  const isReadyForQA = issueData[JIRA_FIELDS_ID][JIRA_FIELD_IDS.STATUS][JIRA_FIELD_IDS.ID]  === JIRA_STATUSES.READY_FOR_QA;
+  return isReadyForQA;
+}
+
 export const isDone = (issueData) => {
   const isDone = issueData[JIRA_FIELDS_ID][JIRA_FIELD_IDS.STATUS][JIRA_FIELD_IDS.STATUS_CATEGORY][JIRA_FIELD_IDS.ID] === JIRA_STATUS_CATEGORIES.DONE;
   return isDone;
 }
+
+
