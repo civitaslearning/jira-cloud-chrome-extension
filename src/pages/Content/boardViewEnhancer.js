@@ -2,7 +2,7 @@ import React from 'react';
 import AlertsIndicator from './AlertsIndicator';
 import UserAvatar from './UserAvatar';
 import { createRoot } from 'react-dom/client';
-import {JIRA_FIELD_IDS, LABELS, isBug, isDone, isReadyForQA} from './jiraApiUtils'
+import {JIRA_FIELD_IDS, JIRA_LABELS, getLabels, isBug, isDone, isReadyForQA} from './jiraApiUtils'
 import { enhanceIssueCards, enhanceSelectedIssueCards, applyIssueCardEnhancements } from './jiraViewEnhancer';
 
 const BOARD_CARDS_SELECTOR = '*[data-test-id="software-board.board"] *[data-testid="platform-board-kit.ui.card.card"]';
@@ -158,7 +158,7 @@ const updateAvatar = (jiraFieldId, fieldDisplayName, boardCard, issueData) => {
 const getBoardIssueAlerts = (issueData) => {
   const boardIssueAlerts = [];
 
-  if(!issueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE] && !(isBug(issueData)) ) {
+  if(!issueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE] && !(isBug(issueData) || getLabels(issueData).includes(JIRA_LABELS.WONT_ESTIMATE)) ) {
 
     boardIssueAlerts.push(`Needs Estimate`);
   }

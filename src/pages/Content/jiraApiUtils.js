@@ -41,7 +41,7 @@ export const JIRA_STATUSES = {
   WONT_DO:"10102"
 };
 
-export const LABELS = {
+export const JIRA_LABELS = {
   WONT_ESTIMATE: "wont_estimate"
 };
 
@@ -167,4 +167,7 @@ export const isDone = (issueData) => {
   return isDone;
 }
 
+export const getLabels = (issueData) => {
+  return issueData[JIRA_FIELDS_ID][JIRA_FIELD_IDS.LABELS]
+}
 

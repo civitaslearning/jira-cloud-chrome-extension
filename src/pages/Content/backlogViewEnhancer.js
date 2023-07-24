@@ -83,7 +83,7 @@ const enhanceBacklogCard = (backlogCard, backlogIssueData) => {
   if(backlogIssueData.fields["labels"].includes("needs_info")){
     cardColor = "#ffdbff";
   }
-  else if(backlogIssueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE]) {
+  else if(backlogIssueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE] || backlogIssueData.fields["labels"].includes("wont_estimate")) {
     cardColor = "#c1e1c1";
   } else if(backlogIssueData.fields["labels"].includes("ready_to_estimate")){
     cardColor = "#daf0f7";
