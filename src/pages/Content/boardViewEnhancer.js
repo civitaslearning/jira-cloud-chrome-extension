@@ -30,7 +30,50 @@ export const handleBoardViewMutation = async (mutation) => {
   handleBoardCardAlertIndicatorOutOfPlace(mutation);
 
   handleBoardIssueEditorDialogClosing(mutation);
+
+  handleInlineBoardIssueEdits(mutation);
 }
+
+/**
+ * Handles inline board issue edits
+ * 
+ * @param {*} mutation 
+ * @returns 
+ */
+const handleInlineBoardIssueEdits = (mutation) => {
+  const element = mutation.target;
+
+  const boardCard = element.closest(`[data-testid="platform-board-kit.ui.card.card"]`);
+
+  // If the mutation was not to backlog card, no-op
+  if(!boardCard) {
+    return;
+  }
+
+  // If an <INPUT> element has been removed from the board card, this implies that the user has
+  // finished editing an attribute of the issue. NOTE: This *doesn't* imply that the user actually made a change, 
+  // but for now we just unconditionally update the corrresponding board card
+  const removedNodes = mutation.removedNodes;
+  if(removedNodes.length) { 
+    removedNodes.forEach(
+      node => {
+        const inputNode = node.querySelector(`input`);
+        
+        // If an <INPUT> element was removed from the backlog issue editor...
+        if(inputNode) {
+          
+          // Get the key for the issue currently being edited
+          const issueKey = getIssueKeyFromBoardCard(boardCard);
+
+          // Update the corresponding backloh issue card
+          enhanceBoardCards([getBoardCardFromIssueKey(issueKey)]);
+        }
+      }
+    );
+    
+  } 
+}
+
 
 /**
  * Enhances the specified board cards. New data will be retrieved.
