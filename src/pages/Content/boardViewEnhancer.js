@@ -8,6 +8,7 @@ import { enhanceIssueCards, enhanceSelectedIssueCards, applyIssueCardEnhancement
 const BOARD_CARDS_SELECTOR = '*[data-test-id="software-board.board"] *[data-testid="platform-board-kit.ui.card.card"]';
 
 const ALERTS_INDICATOR_WRAPPER_ID = 'ALERTS_INDICATOR_WRAPPER_ID';
+const QUICK_FILTERS_WRAPPER_ID = 'QUICK_FILTERS_WRAPPER_ID';
 
 /**
  * Returns true if the Jira board is diplayed 
@@ -18,12 +19,145 @@ export const isBoardView = () => {
   return !!document.querySelector('[data-test-id="software-board.board"]');
 }
 
+const enhanceBoard = () => {
+  
+  if( getQuickFiltersWrapper() ) {
+    return;
+  }
+
+  applyStyleRules(quickFilterButtonStyleRules);
+
+  const quickFiltersSibling = document.querySelector('[data-test-id="software-board.header.controls-bar"]').parentElement.parentElement;
+
+  const quickFilterWrapper = document.createElement("div");
+  quickFilterWrapper.setAttribute("id", QUICK_FILTERS_WRAPPER_ID);  
+  quickFilterWrapper.setAttribute("class", `quick-filter-wrapper`);  
+
+  const quickFiltersContainer = document.createElement("dl");
+  quickFiltersContainer.setAttribute("class", `quick-filters-container`);  
+
+  const quickFiltersTitle = document.createElement("dt");
+  quickFiltersTitle.setAttribute("class", `quick-filter-title`);  
+  quickFiltersTitle.textContent = "Quick Filters:"
+  quickFiltersContainer.appendChild(quickFiltersTitle);
+
+  appendQuickFilterLabel(quickFiltersContainer, "OWNER:");
+  appendQuickFilterButton(quickFiltersContainer, "Test NO-OP");
+  
+  quickFilterWrapper.appendChild(quickFiltersContainer);
+
+  quickFiltersSibling.insertAdjacentElement(`beforebegin`, quickFilterWrapper);
+}
+
+const appendQuickFilterLabel = (quickFiltersContainer, displayName) => {
+  const quickFilterLabel = document.createElement("dd");
+  quickFilterLabel.setAttribute("class", `quick-filter-label`);
+  quickFilterLabel.textContent = displayName;
+
+  quickFiltersContainer.appendChild(quickFilterLabel);
+}
+
+const appendQuickFilterButton = (quickFiltersContainer, displayName) => {
+  const quickFilterButtonContainer = document.createElement("dd");
+  quickFilterButtonContainer.setAttribute("class", `quick-filter-button-container`);  
+
+  const quickFilterButton = document.createElement("a");
+  quickFilterButton.setAttribute("class", `quick-filter-button`);  
+  quickFilterButton.textContent = displayName;
+
+  quickFilterButton.addEventListener("click", buttonPressed);
+  quickFilterButtonContainer.appendChild(quickFilterButton);
+
+  quickFiltersContainer.appendChild(quickFilterButtonContainer);
+}
+
+const buttonPressed = (e) => {
+  e.target.classList.toggle("quick-filter-button-active");
+  
+  // e.target.innerText = e.target.innerText.trim() === "OFF"?"ON":"OFF";
+}
+
+const getQuickFiltersWrapper = () => {
+  return document.querySelector(`[id="${QUICK_FILTERS_WRAPPER_ID}"]`);
+}
+
+const quickFilterButtonStyleRules =`
+.quick-wrapper{
+  display: inline-block;
+  margin: 0px;
+}
+
+.quick-filters-container{
+  display: inline-block;
+  padding: 10px 0px 0px 0px;
+  margin: 0px;
+}
+
+.quick-filter-title{
+  display: inline-block;
+  font-weight: bold;
+  padding-right: 5px;
+}
+
+.quick-filter-label{
+  display: inline-block; 
+  margin: 0px 4px 0px 6px
+}
+
+.quick-filter-button-container{
+  display: inline-block;
+  padding: 0px;
+  margin: 0px 4px 8px 4px;
+  text-decoration: none;
+}
+
+.quick-filter-button{
+  border: 1px solid transparent;
+  display: inline-block;
+  padding: 6px 9px;
+  /*padding: 7px 10px;*/
+  
+  text-decoration: none;
+}
+.quick-filter-button:hover{
+  border: 1px solid lightgray;
+  border-radius: 15px 15px 15px 15px;
+  display: inline-block;
+  /*padding: 7px 10px;*/
+  padding: 6px 9x;
+  
+  text-decoration: none;
+}
+.quick-filter-button-active{
+  color: #3b73af;
+  background-color:white;
+  filter: drop-shadow(2px 4px 6px blue);
+  /*border: 1px solid blue;*/
+  border-radius: 15px 15px 15px 15px;
+  display: inline-block;
+  /*padding: 7px 10px;*/
+  padding: 6px 9px;
+  
+  text-decoration: none;
+}
+`;
+
+
+
+const applyStyleRules = (styleRules) => {
+  const sheet = document.createElement('style')
+  sheet.innerHTML = styleRules;
+  document.body.appendChild(sheet);
+}
+
 /**
  * Handles mutation of the Jira board view
  * 
  * @param {*} mutation 
  */
 export const handleBoardViewMutation = async (mutation) => {
+
+  enhanceBoard();
 
   enhanceSelectedIssueCards(BOARD_CARDS_SELECTOR, enhanceBoardCards);
 
