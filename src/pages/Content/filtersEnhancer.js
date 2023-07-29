@@ -31,6 +31,13 @@ export const addQuickFilters = (quickFiltersSibling) => {
   appendQuickFilterButton(quickFiltersContainer, "Kei", "Custom filters" , "Owned By Kei");
   appendQuickFilterButton(quickFiltersContainer, "Nick", "Custom filters" , "Owned By Nick");
   appendQuickFilterButton(quickFiltersContainer, "PJ", "Custom filters" , "Owned By PJ");
+  appendQuickFilterButton(quickFiltersContainer, "None", "Custom filters" , "No Owner");
+
+  appendQuickFilterLabel(quickFiltersContainer, "FOCUS GROUP:");
+  appendQuickFilterButton(quickFiltersContainer, "Application", "Custom filters" , "Application Focus Group");
+  appendQuickFilterButton(quickFiltersContainer, "Cost Optimization and Data Integration", "Custom filters" , "Cost Optimization and Data Integration Focus Group");
+  appendQuickFilterButton(quickFiltersContainer, "Modeling", "Custom filters" , "Modeling Focus Group");
+  appendQuickFilterButton(quickFiltersContainer, "None", "Custom filters" , "No Focus Group");
   
   quickFilterWrapper.appendChild(quickFiltersContainer);
 
