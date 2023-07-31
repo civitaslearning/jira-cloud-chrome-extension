@@ -1,6 +1,9 @@
-import {JIRA_FIELD_IDS} from './jiraApiUtils'
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import {JIRA_FIELD_IDS, getLabels} from './jiraApiUtils'
 import { enhanceIssueCards, enhanceSelectedIssueCards, applyIssueCardEnhancements } from './jiraViewEnhancer';
 import { addQuickFilters } from './filtersEnhancer';
+import AlertsIndicator from './AlertsIndicator';
 
 
 /**
@@ -81,30 +84,125 @@ const applyBacklogCardEnhancements = (backlogCard, backlogIssueData) => {
  * @param {*} backlogIssueData 
  */
 const enhanceBacklogCard = (backlogCard, backlogIssueData) => {
+  // Reset style
+  backlogCard.setAttribute("style","");
+
   const backlogCardContainer = backlogCard.querySelectorAll(`*[data-testid='software-backlog.card-list.card.card-contents.card-container']`)?.item(0);
 
   var cardColor;
   if(backlogIssueData.fields["labels"].includes("needs_info")){
     cardColor = "#ffdbff";
   }
-  else if(backlogIssueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE] || backlogIssueData.fields["labels"].includes("wont_estimate")) {
+  else if( isReadyToWork(backlogIssueData) ){
     cardColor = "#c1e1c1";
-  } else if(backlogIssueData.fields["labels"].includes("ready_to_estimate")){
+  } else if( isReadyToEstimate(backlogIssueData) ){
     cardColor = "#daf0f7";
   } else {
     cardColor = "#fafad2";
   }
+
   colorizeCard(backlogCardContainer, cardColor);
+
+  const alerts = getBacklogIssueAlerts(backlogIssueData);
+  updateBacklogCardAlertsIndicator(backlogCardContainer, alerts);  
+}
+
+const isReadyToWork = (backlogIssueData) => {
+  return backlogIssueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE] || backlogIssueData.fields["labels"].includes("wont_estimate");
+}
+
+const isReadyToEstimate = (backlogIssueData) => {
+  return backlogIssueData.fields["labels"].includes("ready_to_estimate");
+}
+
+const hasFocusGroup = (backlogIssueData) => {
+  const FOCUS_GROUP_LABELS = ["application_focus_group", "cda_data_cost_focus_group", "model_focus_group"];
+
+    return getLabels(backlogIssueData).some(issueLabel => FOCUS_GROUP_LABELS.includes(issueLabel));
+}
+
+const getAssigneeName = (backlogIssueData) => {
+  return backlogIssueData.fields[JIRA_FIELD_IDS.ASSIGNEE]?.displayName;
+}
+
+const getOwnerName = (backlogIssueData) => {
+  return backlogIssueData.fields[JIRA_FIELD_IDS.OWNER]?.[0]?.displayName 
 }
 
 /**
- * Sets the background color of the specified issue card element
+ * Get any alerts based on the specified issue data
  * 
- * @param {*} issueCard 
+ * @param {*} backlogIssueData 
+ * @returns an array of alert message strings
+ */
+const getBacklogIssueAlerts = (backlogIssueData) => {
+  const backlogIssueAlerts = [];
+
+  
+  if( !isReadyToWork(backlogIssueData) && !isReadyToEstimate(backlogIssueData) ) {
+
+    if( !hasFocusGroup(backlogIssueData) ) {
+      backlogIssueAlerts.push(`No Focus Group`);
+    }
+  }
+
+  const ownerName = getOwnerName(backlogIssueData);
+  const assigneeName = getAssigneeName(backlogIssueData);
+
+  if( ownerName != assigneeName ) {
+    backlogIssueAlerts.push(`Owner (${ownerName?ownerName:"None"}) != Assignee (${assigneeName?assigneeName:"None"})`);
+  }
+
+  /*
+  if(issueData.fields[JIRA_FIELD_IDS.OWNER].l) {
+    if(issueData.fields[JIRA_FIELD_IDS.OWNER][0]?.displayName != issueData.fields[JIRA_FIELD_IDS.ASSIGNEE]?.displayName ) {
+    backlogIssueAlerts.push(`Owner: ${issueData.fields[JIRA_FIELD_IDS.OWNER]?.displayName } != Assignee: ${issueData.fields[JIRA_FIELD_IDS.ASSIGNEE]?.displayName}`);
+  } else if (issueData.fields[JIRA_FIELD_IDS.ASSIGNEE]) {
+    backlogIssueAlerts.push(`Owner: != Assignee`);
+  }
+  */
+
+  
+  return backlogIssueAlerts;
+}
+
+const updateBacklogCardAlertsIndicator = (backlogCard, alerts) => {
+  const ALERTS_INDICATOR_WRAPPER_ID = "ALERTS_INDICATOR_WRAPPER_ID";
+  
+  var alertsIndicatorWrapper = backlogCard.querySelector(`[id="${ALERTS_INDICATOR_WRAPPER_ID}"`);
+
+  // Remove the alerts indicator, if any
+  if(alertsIndicatorWrapper) {
+    alertsIndicatorWrapper.remove();
+  }
+   
+  // Add the alerts indicator if there are alerts
+  if(alerts.length) {
+    const alertIndicatorInsertionPoint = backlogCard.children.item(5).children.item(1);
+
+    const alertsIndicatorWrapper = document.createElement("div");
+    alertsIndicatorWrapper.setAttribute("style", "position:relative;");
+    alertsIndicatorWrapper.setAttribute("id", ALERTS_INDICATOR_WRAPPER_ID);
+
+    alertIndicatorInsertionPoint.insertAdjacentElement(`beforebegin`, alertsIndicatorWrapper);
+    const alertsIndicatorRoot = createRoot(alertsIndicatorWrapper);
+    alertsIndicatorRoot.render(<AlertsIndicator alerts={alerts} />);
+  }
+}
+
+/**
+ * Sets the background color of the specified backlog card element
+ * 
+ * @param {*} backlogCardContainer 
  * @param {*} color 
  */
-const colorizeCard = (issueCard, color) => {
-  issueCard?.setAttribute("style", `background-color:${color}`);  
+const colorizeCard = (backlogCardContainer, color) => {
+  appendStyle(backlogCardContainer, `background-color:${color};`)
+}
+
+const appendStyle = (element, style) => {
+  const previousStyle = element?.getAttribute("style");
+  element?.setAttribute("style", `${previousStyle?previousStyle:""}${style};`);  
 }
 
 /**
