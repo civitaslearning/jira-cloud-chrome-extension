@@ -38,6 +38,11 @@ export const addQuickFilters = (quickFiltersSibling) => {
   appendQuickFilterButton(quickFiltersContainer, "Cost Optimization and Data Integration", "Custom filters" , "Cost Optimization and Data Integration Focus Group");
   appendQuickFilterButton(quickFiltersContainer, "Modeling", "Custom filters" , "Modeling Focus Group");
   appendQuickFilterButton(quickFiltersContainer, "None", "Custom filters" , "No Focus Group");
+
+  appendQuickFilterLabel(quickFiltersContainer, "PLANNING:");
+  appendQuickFilterButton(quickFiltersContainer, "Not Ready", "Custom filters" , "Not Ready To Estimate");
+  appendQuickFilterButton(quickFiltersContainer, "Needs Info", "Label" , "needs_info");
+  
   
   quickFilterWrapper.appendChild(quickFiltersContainer);
 
