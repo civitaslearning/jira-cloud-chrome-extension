@@ -1,10 +1,12 @@
 <img src="src/assets/img/icon-128.png" width="64"/>
 
-# A Chrome Browser Extension (MV3) Boilerplate that extends Jira Cloud Functionality
+# A Chrome Browser Extension (MV3) that extends Jira Cloud Functionality
 
 ## Features
 
-- Colorizes backlog issues cards
+- Colorizes board and backlog cards
+- Adds Quickfilters to board and backlog cards
+- Adds alerts to board and backlog cards
 
 ## Installing and Running
 
