@@ -25,8 +25,8 @@ export const addQuickFilters = (quickFiltersSibling) => {
   quickFiltersContainer.appendChild(quickFiltersTitle);
 
   appendQuickFilterLabel(quickFiltersContainer, "OWNER:");
-  appendQuickFilterButton(quickFiltersContainer, "Eric", "Custom filters" , "Owned By Eric");
   appendQuickFilterButton(quickFiltersContainer, "Chris", "Custom filters" , "Owned By Chris");
+  appendQuickFilterButton(quickFiltersContainer, "Eric", "Custom filters" , "Owned By Eric");
   appendQuickFilterButton(quickFiltersContainer, "Gus", "Custom filters" , "Owned By Gus");
   appendQuickFilterButton(quickFiltersContainer, "Kei", "Custom filters" , "Owned By Kei");
   appendQuickFilterButton(quickFiltersContainer, "Nick", "Custom filters" , "Owned By Nick");
@@ -40,10 +40,18 @@ export const addQuickFilters = (quickFiltersSibling) => {
   appendQuickFilterButton(quickFiltersContainer, "None", "Custom filters" , "No Focus Group");
 
   appendQuickFilterLabel(quickFiltersContainer, "PLANNING:");
-  appendQuickFilterButton(quickFiltersContainer, "Ready to Estimate", "Label" , "ready_to_estimate");
-  appendQuickFilterButton(quickFiltersContainer, "Not Ready", "Custom filters" , "Not Ready To Estimate");
-  appendQuickFilterButton(quickFiltersContainer, "Needs Info", "Label" , "needs_info");
+  appendQuickFilterButton(quickFiltersContainer, "Ready to Estimate", "Custom Filters" , "Ready to Estimate");
+  appendQuickFilterButton(quickFiltersContainer, "Not Ready", "Custom filters" , "Not Ready to Estimate");
+  appendQuickFilterButton(quickFiltersContainer, "Needs Info", "Custom Filters" , "Needs Info");
   
+  appendQuickFilterLabel(quickFiltersContainer, "TESTER:");
+  appendQuickFilterButton(quickFiltersContainer, "Chris", "Custom filters" , "Tester is Chris");
+  appendQuickFilterButton(quickFiltersContainer, "Eric", "Custom filters" , "Tester is Eric");
+  appendQuickFilterButton(quickFiltersContainer, "Gus", "Custom filters" , "Tester is Gus");
+  appendQuickFilterButton(quickFiltersContainer, "Kei", "Custom filters" , "Tester is Kei");
+  appendQuickFilterButton(quickFiltersContainer, "Nick", "Custom filters" , "Tester is Nick");
+  appendQuickFilterButton(quickFiltersContainer, "PJ", "Custom filters" , "Tester is PJ");
+  appendQuickFilterButton(quickFiltersContainer, "None", "Custom filters" , "No Tester");
   
   quickFilterWrapper.appendChild(quickFiltersContainer);
 

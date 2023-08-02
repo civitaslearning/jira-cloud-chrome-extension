@@ -97,6 +97,8 @@ const enhanceBacklogCard = (backlogCard, backlogIssueData) => {
     cardColor = "#c1e1c1";
   } else if( isReadyToEstimate(backlogIssueData) ){
     cardColor = "#daf0f7";
+  } else if ( isCutLine(backlogIssueData) ){
+    cardColor = "#ffc09f";
   } else {
     cardColor = "#fafad2";
   }
@@ -113,6 +115,10 @@ const isReadyToWork = (backlogIssueData) => {
 
 const isReadyToEstimate = (backlogIssueData) => {
   return backlogIssueData.fields["labels"].includes("ready_to_estimate");
+}
+
+const isCutLine = (backlogIssueData) => {
+  return backlogIssueData.fields["labels"].includes("cut_line");
 }
 
 const hasFocusGroup = (backlogIssueData) => {
