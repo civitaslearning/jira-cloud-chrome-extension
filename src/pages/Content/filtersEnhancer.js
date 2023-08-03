@@ -94,9 +94,9 @@ export const addQuickFilters = async (quickFiltersSibling) => {
   appendQuickFilterButton(quickFiltersContainer, "None", "Custom filters" , "No Focus Group");
 
   appendQuickFilterLabel(quickFiltersContainer, "PLANNING:");
-  appendQuickFilterButton(quickFiltersContainer, "Ready to Estimate", "Custom Filters" , "Ready to Estimate");
+  appendQuickFilterButton(quickFiltersContainer, "Ready to Estimate", "Custom filters" , "Ready to Estimate");
   appendQuickFilterButton(quickFiltersContainer, "Not Ready", "Custom filters" , "Not Ready to Estimate");
-  appendQuickFilterButton(quickFiltersContainer, "Needs Info", "Custom Filters" , "Needs Info");
+  appendQuickFilterButton(quickFiltersContainer, "Needs Info", "Custom filters" , "Needs Info");
   
   appendQuickFilterLabel(quickFiltersContainer, "TESTER:");
   appendQuickFilterButton(quickFiltersContainer, "Chris", "Custom filters" , "Tester is Chris");
@@ -111,7 +111,7 @@ export const addQuickFilters = async (quickFiltersSibling) => {
 
   quickFiltersSibling.insertAdjacentElement(`beforebegin`, quickFilterWrapper);
 
-  syncQuickFilters();
+  // syncQuickFilters();
 }
 
 const handleFilterMenuClosed = (mutation) => {
@@ -220,17 +220,23 @@ const getFilterMenuToggler = (filterMenuName, filterMenuItemName) => {
 }
 
 const toggleFilterMenuItem = async (filterMenuName, filterMenuItemName) => {
+  await clickFilterMenuButton(filterMenuName);
+  await clickFilterMenuItem(filterMenuItemName);
+  await clickFilterMenuButton(filterMenuName);
+
+  /*
   clickFilterMenuButton(filterMenuName); // Open the filter menu
 
   await clickFilterMenuItem(filterMenuItemName);
 
   clickFilterMenuButton(filterMenuName); // Click away to close the filter menu
+  */
 }
 
 const clickFilterMenuButton = async (filterMenuName) => {
   const filterMenuButtons = document.querySelectorAll(`[data-test-id="software-filters.ui.list-filter-container"] button`);
 
-  console.log(`jce: getFilterMenuButton: ${filterMenuButtons.length}`);
+  console.log(`jce: getFilterMenuButton: ${filterMenuName} ${filterMenuButtons.length}`);
 
   for (var i = 0; i < filterMenuButtons.length; ++i) {
     console.log(`jce: getFilterMenuButton: ${filterMenuButtons[i].textContent}`);
