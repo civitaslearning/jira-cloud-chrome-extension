@@ -1,7 +1,61 @@
 
 const QUICK_FILTERS_WRAPPER_ID = 'QUICK_FILTERS_WRAPPER_ID';
 
-export const addQuickFilters = (quickFiltersSibling) => {
+
+function waitForElementToNotExist(selector) {
+  return new Promise(resolve => {
+    if (!document.querySelector(selector)) {
+      console.log(`jce: waitForElementToNotExist: ${selector}`);
+      return resolve();
+    }
+
+    const observer = new MutationObserver(() => {
+      if (!document.querySelector(selector)) {
+        console.log(`jce: waitForElementToNotExist: ${selector}`);
+        resolve();
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+    });
+  });
+}
+
+
+export const syncQuickFilters = async () => {
+  console.log("jce: syncQuickFilters ");
+
+  await waitForElementToExist(`[data-testid="filters.common.ui.list.epic-filter"]`);
+  await clickFilterMenuButton("Epic");
+  await getCheckedMenuItems("Epic");
+  await clickFilterMenuButton("Epic");
+
+
+  await clickFilterMenuButton("Label");
+  await getCheckedMenuItems("Label");
+  await clickFilterMenuButton("Label");
+
+  await clickFilterMenuButton("Custom filters");
+  await getCheckedMenuItems("Custom filters");
+  await clickFilterMenuButton("Custom filters");
+
+  await clickFilterMenuButton("Type");
+  await getCheckedMenuItems("Type");
+  await clickFilterMenuButton("Type");
+}
+
+const getCheckedMenuItems = async (menuName) => {
+  (await waitForElementToExist(`[data-test-id="filters.common.ui.list.menu.list"]`));
+  const filterMenuItemEls = document.querySelectorAll(`[id^="react-select-"] > div > span[style*="selected"]`);
+  console.log(`jce: getCheckedMenuItems: Found ${filterMenuItemEls.length} checked items for menu ${menuName}`);
+}
+
+
+
+export const addQuickFilters = async (quickFiltersSibling) => {
   
   console.log(`jce: addQuickFilters: ${quickFiltersSibling}`)
   if( getQuickFiltersWrapper() ) {
@@ -56,6 +110,80 @@ export const addQuickFilters = (quickFiltersSibling) => {
   quickFilterWrapper.appendChild(quickFiltersContainer);
 
   quickFiltersSibling.insertAdjacentElement(`beforebegin`, quickFilterWrapper);
+
+  syncQuickFilters();
+}
+
+const handleFilterMenuClosed = (mutation) => {
+  console.log(`jce: handleFilterMenuClosed`);
+
+  // If an <INPUT> element has been removed from the backlog issue editor, this implies that the user has
+  // finished editing an attribute of the issue. NOTE: This *doesn't* imply that the user actually made a change, 
+  // but for now we just unconditionally update the corrresponding issue card
+  const removedNodes = mutation.removedNodes;
+  if(removedNodes.length) { 
+    removedNodes.forEach(
+      node => {
+        console.log(`jce: handleFilterMenuClosed 2`);
+      
+        if(node.nodeType === 1) {
+          const menuItemItems = node.querySelectorAll(`[data-test-id="filters.common.ui.list.menu.list"]`);
+
+          console.log(`jce: handleFilterMenuClosed 3`);
+
+          menuItemItems.forEach(
+            menuItem => {
+              console.log(`jce: handleFilterMenuClosed removed menu item`);
+            } 
+          );
+        }
+        
+        /*menuItemItems.forEach(
+          menuItem => {
+            console.log(`jce: handleFilterMenuClosed removed menu item`);
+          } 
+        );
+        */
+      }
+    );
+    
+  }
+}
+
+const handleFilterMenuOpen = (mutation) => {
+  console.log(`jce: handleFilterMenuOpen`);
+
+  // If an <INPUT> element has been removed from the backlog issue editor, this implies that the user has
+  // finished editing an attribute of the issue. NOTE: This *doesn't* imply that the user actually made a change, 
+  // but for now we just unconditionally update the corrresponding issue card
+  const addedNodes = mutation.addedNodes;
+  if(addedNodes.length) { 
+    addedNodes.forEach(
+      node => {
+        console.log(`jce: handleFilterMenuOpen 2`);
+      
+        if(node.nodeType === 1) {
+          const menuItemItems = node.querySelectorAll(`[data-test-id="filters.common.ui.list.menu.list"]`);
+
+          console.log(`jce: handleFilterMenuOpen 3`);
+
+          menuItemItems.forEach(
+            menuItem => {
+              console.log(`jce: handleFilterMenuOpen added menu item`);
+            } 
+          );
+        }
+        
+        /*menuItemItems.forEach(
+          menuItem => {
+            console.log(`jce: handleFilterMenuClosed removed menu item`);
+          } 
+        );
+        */
+      }
+    );
+    
+  }
 }
 
 const appendQuickFilterLabel = (quickFiltersContainer, displayName) => {
@@ -99,7 +227,7 @@ const toggleFilterMenuItem = async (filterMenuName, filterMenuItemName) => {
   clickFilterMenuButton(filterMenuName); // Click away to close the filter menu
 }
 
-const clickFilterMenuButton = (filterMenuName) => {
+const clickFilterMenuButton = async (filterMenuName) => {
   const filterMenuButtons = document.querySelectorAll(`[data-test-id="software-filters.ui.list-filter-container"] button`);
 
   console.log(`jce: getFilterMenuButton: ${filterMenuButtons.length}`);
