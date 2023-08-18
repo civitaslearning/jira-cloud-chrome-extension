@@ -3,6 +3,7 @@ const QUICK_FILTERS_WRAPPER_ID = 'QUICK_FILTERS_WRAPPER_ID';
 
 // A map of maps for quick filter buttons. 
 // Keys are filter menu names and map to a map of menu item names to quick filter buttons
+// TODO: This is dumb. Use query selectors and attributes on the buttons indicating which filters they belong to.
 const quickFiltersButtonMap = new Map();
 
 /**
@@ -12,14 +13,19 @@ const quickFiltersButtonMap = new Map();
  */
 const syncQuickFilterButtonsWithFilterMenu = async (filterMenuName) => {
 
+  console.log(`syncQuickFilterButtonsWithFilterMenu 1`);
   // Wait for the filter menu button to exist
   await waitForElementToExist(`[data-testid="filters.common.ui.list.${filterMenuName.replace(/\s+/g, '-').toLowerCase()}-filter"]`);
 
+  console.log(`syncQuickFilterButtonsWithFilterMenu 2`);
   // Open the filter menu
   await openFilterMenu(filterMenuName);
 
   // Get the checked filter menu items
   const checkedMenuItems = await getCheckedMenuItems(filterMenuName);
+
+  
+  await closeFilterMenu(filterMenuName);
 
   // Set any quick filter buttons associated with the filter menu to the appropriate state (active or inactive)
   quickFiltersButtonMap?.get(filterMenuName)?.forEach(
@@ -32,19 +38,36 @@ const syncQuickFilterButtonsWithFilterMenu = async (filterMenuName) => {
       }
     }
   );
-  closeFilterMenus();
+}
+
+/**
+ * Deactivates all the quick filter buttons!
+ */
+const deactivateAllQuickFilterButtons = () => {
+  
+  // Get all the active quick filter buttons
+  const quickFilterButtons = document.querySelectorAll(`.quick-filter-button-active`);
+  
+  // Deactive each active button
+  quickFilterButtons.forEach(
+    quickFilterButton => {
+      deactivateQuickFilterButton(quickFilterButton);
+    }
+  )
 }
 
 /**
  * Syncs all quick filter buttons with their corresponding filter menu items state
  */
 const syncQuickFilters = async () => {
-  console.log("jce: syncQuickFilters ");
+  // TODO: For now we just support "Custom filters" based Quick Filters.
+  // Syncing *all* of the filters here causes annoying flash. Come back to this when/if
+  // we want to support filters.
 
-  await syncQuickFilterButtonsWithFilterMenu("Version");
-  await syncQuickFilterButtonsWithFilterMenu("Epic");
-  await syncQuickFilterButtonsWithFilterMenu("Label");
-  await syncQuickFilterButtonsWithFilterMenu("Type");
+  //await syncQuickFilterButtonsWithFilterMenu("Version");
+  //await syncQuickFilterButtonsWithFilterMenu("Epic");
+  //await syncQuickFilterButtonsWithFilterMenu("Label");
+  //await syncQuickFilterButtonsWithFilterMenu("Type");
   await syncQuickFilterButtonsWithFilterMenu("Custom filters");
 }
 
@@ -58,10 +81,10 @@ const getCheckedMenuItems = async (menuName) => {
   const checkedMenuItems = [];
 
   // Wait for the drop down menu to exist
-  (await waitForElementToExist(`div [id^="ds--dropdown"]`));
+  const filterMenu = (await waitForElementToExist(`div [id^="ds--dropdown"]`));
 
   // Get the checked menu item elements
-  const menuItemChecks = document.querySelectorAll(`[id^="react-select-"] > div > span[style*="selected"]`);
+  const menuItemChecks = filterMenu.querySelectorAll(`[id^="react-select-"] > div > span[style*="selected"]`);
   
   // Get the menu items names associated with each check
   menuItemChecks.forEach(
@@ -82,9 +105,6 @@ const getCheckedMenuItems = async (menuName) => {
  */
 
 export const addQuickFilters = async (quickFiltersSibling) => {
-  
-  console.log(`jce: addQuickFilters: ${quickFiltersSibling}`)
-
   // If the quick filters have alreay been added, do nothing
   if( getQuickFiltersWrapper() ) {
     return;
@@ -150,6 +170,62 @@ export const addQuickFilters = async (quickFiltersSibling) => {
 }
 
 
+export const handleQuickFiltersMutation = (mutation) => {
+  handleFiltersCleared(mutation);
+  handleFilterMenuClosed(mutation);
+}
+
+const describeNode = (node) => {
+  console.log(`  jce: handleFiltersCleared Node: ${node.nodeName} ${node.nodeType}`);
+  if(node.attributes) {
+    for (const attr of node.attributes) {
+      console.log(`    jce: handleFiltersCleared Attr:  ${attr.name}=${attr.value}`);
+    }
+  }
+}
+
+/**
+ * Handle no active filter menu items. We don't have to check each filter menu 
+ * in this case and just set all quick filter buttons to inactive.
+ * 
+ * @param {*} mutation 
+ */
+const handleFiltersCleared = (mutation) => {
+  
+  const removedNodes = mutation.removedNodes;
+  
+  // Iterate over removed nodes
+  if(removedNodes.length) { 
+    removedNodes.forEach(
+      node => {
+        if(node.nodeType === 1) {
+
+          // See if a filter menu badge element has been removed. Badges are the little number pills
+          // next to the filter menu button that indicate how many filter items in that filter are active. 
+          // If none are active, then the badge is removed.
+          const filtersBadge = node.closest(`[data-testid$="filter-badge"]`);
+
+          // If a filter badge has been removed...
+          if(filtersBadge) {
+            // Get the "Clear Filter" button
+            const clearFiltersButton = document.querySelector(`[data-testid="filters.ui.filters.clear-button.ak-button"]`);
+
+            // Determine if the button is hidden
+            const hidden = clearFiltersButton.parentElement.getAttribute("aria-hidden");
+            
+            // If the button is hidden at this point, this indicates that no filters are active
+            if(hidden) {
+              deactivateAllQuickFilterButtons();
+            }
+          }
+          
+        }
+      }
+    );
+    
+  }
+}
+
 /**
  * Handles when a manually opened filter menu is closed. When this occurs,
  * we sync the quick filters so the corresponding quick filter button states
@@ -157,7 +233,7 @@ export const addQuickFilters = async (quickFiltersSibling) => {
  * 
  * @param {*} mutation 
  */
-export const  handleFilterMenuClosed = (mutation) => {
+const  handleFilterMenuClosed = (mutation) => {
   const removedNodes = mutation.removedNodes;
   // Iterate over removed nodes
   if(removedNodes.length) { 
@@ -209,6 +285,8 @@ const appendQuickFilterButton = (quickFiltersContainer, displayName, filterMenuN
 
   const quickFilterButton = document.createElement("a");
   quickFilterButton.setAttribute("class", `quick-filter-button`);  
+  quickFilterButton.setAttribute("filter-menu", filterMenuName);  
+  quickFilterButton.setAttribute("filter-menu-item", filterMenuItemName);  
   quickFilterButton.textContent = displayName;
 
   quickFilterButton.addEventListener("click", getFilterMenuToggler(filterMenuName, filterMenuItemName));
@@ -225,6 +303,8 @@ const appendQuickFilterButton = (quickFiltersContainer, displayName, filterMenuN
   }
   menuItemsMap.set(filterMenuItemName, quickFilterButton);
 }
+
+
 /**
  * Sets the quick filter button style to appear active
  * 
@@ -272,15 +352,15 @@ const getFilterMenuToggler = (filterMenuName, filterMenuItemName) => {
  * @param {*} filterMenuItemName 
  */
 const toggleFilterMenuItem = async (filterMenuName, filterMenuItemName) => {
-  
+ 
   // Open the filter menu
   await openFilterMenu(filterMenuName);
-
+ 
   // Click the specified menu item
   await clickFilterMenuItem(filterMenuItemName);
-
+ 
   // Close the filter menu
-  await closeFilterMenus();
+   await closeFilterMenus();
 
   // Sync the quick filters with the filter menu items state
   syncQuickFilters();
@@ -306,6 +386,18 @@ const openFilterMenu = async (filterMenuName) => {
   dropDownMenu.setAttribute("automated", "true");;
 }
 
+
+/**
+ * Close any open filter menus
+ */
+const closeFilterMenu = async (filterMenuName) => {
+  // Just click away to close any open menus
+  document.body.click();
+
+  await waitForElementToExist(`button[aria-expanded="false"] [data-testid="filters.common.ui.list.${filterMenuName.replace(/\s+/g, '-').toLowerCase()}-filter"]`);
+}
+
+
 /**
  * Close any open filter menus
  */
@@ -321,7 +413,7 @@ const closeFilterMenus = () => {
  */
 const clickFilterMenuButton = async (filterMenuName) => {
   // Get all the filter menu items
-  const filterMenuButtons = document.querySelectorAll(`[data-test-id="software-filters.ui.list-filter-container"] button`);
+  const filterMenuButtons = document.querySelectorAll(`[data-testid="software-filters.ui.list-filter-container"] button`);
 
   // Iterate through the buttons to find the one with the specified name
   for (var i = 0; i < filterMenuButtons.length; ++i) {
@@ -341,25 +433,22 @@ const clickFilterMenuButton = async (filterMenuName) => {
  * @param {*} filterMenuItemName 
  */
 const clickFilterMenuItem = async (filterMenuItemName) => {
-
   // Get the open menu
   // NOTE: This assumes the filter menu button has been clicked and the menu will exist. Could add some error handling/time out here
-  const dropDownMenu = (await waitForElementToExist(`[id^="ds--dropdown"]`));
+  await waitForElementToExist(`[id^="ds--dropdown"]`);
   
-  // Get the list of menu item elements
-  const filterMenuItemEls = document.querySelectorAll(`[data-test-id="filters.common.ui.list.menu.list"]`);
+  // Get the list of menu item elements                  
+  const filterMenuItemEls = document.querySelectorAll(`[data-testid="filters.common.ui.list.menu.list"]`);
   
   // Iterate over the menu item elements
-  for (var i = 0; i < filterMenuItemEls.length; ++i) {
-    
-    // Find the matching filter menu item name
+  for (var i = 0; i < filterMenuItemEls.length; ++i) {    
+
+    // If this is the matching menu item...
     if(filterMenuItemName === filterMenuItemEls[i].textContent) {
-      
-      // Get the actual menu item element to click
-      const filterMenuItem = filterMenuItemEls[i].closest(`[data-test-id="filters.common.ui.list.menu.list"]`);
       // Click it! This will toggle the filter menu item state
-      filterMenuItem.click(); 
+      filterMenuItemEls[i].click();
     }
+
   }
 }
 

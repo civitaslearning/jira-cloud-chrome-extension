@@ -2,7 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import {JIRA_FIELD_IDS, getLabels} from './jiraApiUtils'
 import { enhanceIssueCards, enhanceSelectedIssueCards, applyIssueCardEnhancements } from './jiraViewEnhancer';
-import { addQuickFilters, handleFilterMenuClosed } from './filtersEnhancer';
+import { addQuickFilters, handleQuickFiltersMutation} from './filtersEnhancer';
 import AlertsIndicator from './AlertsIndicator';
 
 
@@ -30,7 +30,7 @@ export const handleBacklogViewMutation = async (mutation) => {
 
   handleInlineBacklogIssueEdits(mutation);
 
-  handleFilterMenuClosed(mutation);
+  handleQuickFiltersMutation(mutation);
 }
 
 /**

@@ -4,7 +4,7 @@ import UserAvatar from './UserAvatar';
 import { createRoot } from 'react-dom/client';
 import {JIRA_FIELD_IDS, JIRA_LABELS, getLabels, isBug, isDone, isReadyForQA} from './jiraApiUtils'
 import { enhanceIssueCards, enhanceSelectedIssueCards, applyIssueCardEnhancements } from './jiraViewEnhancer';
-import { addQuickFilters } from './filtersEnhancer';
+import { addQuickFilters, handleQuickFiltersMutation } from './filtersEnhancer';
 
 const BOARD_CARDS_SELECTOR = '*[data-test-id="software-board.board"] *[data-testid="platform-board-kit.ui.card.card"]';
 
@@ -35,6 +35,8 @@ export const handleBoardViewMutation = async (mutation) => {
   handleBoardIssueEditorDialogClosing(mutation);
 
   handleInlineBoardIssueEdits(mutation);
+
+  handleQuickFiltersMutation(mutation);
 }
 
 /**
