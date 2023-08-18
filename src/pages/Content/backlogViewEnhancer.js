@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import {JIRA_FIELD_IDS, getLabels} from './jiraApiUtils'
+import {JIRA_FIELD_IDS, JIRA_STATUSES, getLabels} from './jiraApiUtils'
 import { enhanceIssueCards, enhanceSelectedIssueCards, applyIssueCardEnhancements } from './jiraViewEnhancer';
 import { addQuickFilters, handleQuickFiltersMutation} from './filtersEnhancer';
 import AlertsIndicator from './AlertsIndicator';
@@ -137,6 +137,10 @@ const getOwnerName = (backlogIssueData) => {
   return backlogIssueData.fields[JIRA_FIELD_IDS.OWNER]?.[0]?.displayName 
 }
 
+const getStatusId = (backlogIssueData) => {
+  return backlogIssueData.fields[JIRA_FIELD_IDS.STATUS].id;
+}
+
 /**
  * Get any alerts based on the specified issue data
  * 
@@ -157,7 +161,7 @@ const getBacklogIssueAlerts = (backlogIssueData) => {
   const ownerName = getOwnerName(backlogIssueData);
   const assigneeName = getAssigneeName(backlogIssueData);
 
-  if( ownerName != assigneeName ) {
+  if( ownerName != assigneeName && getStatusId(backlogIssueData) === JIRA_STATUSES.TO_DO){
     backlogIssueAlerts.push(`Owner (${ownerName?ownerName:"None"}) != Assignee (${assigneeName?assigneeName:"None"})`);
   }
 
