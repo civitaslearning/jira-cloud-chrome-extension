@@ -5,7 +5,7 @@
 ## Features
 
 - Colorizes board and backlog cards
-- Adds Quickfilters to board and backlog cards
+- Adds Quickfilters to board and backlog views
 - Adds alerts to board and backlog cards
 
 ## Installing and Running
