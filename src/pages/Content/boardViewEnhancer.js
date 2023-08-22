@@ -92,6 +92,7 @@ const enhanceBoardCards = async (boardCards) => {
     getIssueKeyFromBoardCard,
     [
       JIRA_FIELD_IDS.ASSIGNEE,
+      JIRA_FIELD_IDS.FLAGGED,
       JIRA_FIELD_IDS.ISSUE_TYPE,
       JIRA_FIELD_IDS.KEY,
       JIRA_FIELD_IDS.LABELS,
@@ -205,6 +206,11 @@ const updateAvatar = (jiraFieldId, fieldDisplayName, boardCard, issueData) => {
  */
 const getBoardIssueAlerts = (issueData) => {
   const boardIssueAlerts = [];
+
+  if(issueData.fields[JIRA_FIELD_IDS.FLAGGED] ) {
+
+    boardIssueAlerts.push(`Flagged!`);
+  }
 
   if(!issueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE] && !(isBug(issueData) || getLabels(issueData).includes(JIRA_LABELS.WONT_ESTIMATE)) ) {
 

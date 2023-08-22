@@ -5,6 +5,7 @@ const JIRA_FIELDS_ID = "fields";
 // Jira Field Ids
 export const JIRA_FIELD_IDS = {
    ASSIGNEE: "assignee",
+   FLAGGED: "customfield_10021",
    ID:"id",
    ISSUE_TYPE: "issuetype",
    KEY: "key",

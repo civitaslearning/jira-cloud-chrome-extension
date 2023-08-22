@@ -45,6 +45,7 @@ const enhanceBacklogCards = async (backlogCards) => {
     getIssueKeyFromBacklogCard,
     [
       JIRA_FIELD_IDS.ASSIGNEE,
+      JIRA_FIELD_IDS.FLAGGED,
       JIRA_FIELD_IDS.ISSUE_TYPE,
       JIRA_FIELD_IDS.KEY,
       JIRA_FIELD_IDS.LABELS,

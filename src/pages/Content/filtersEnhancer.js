@@ -163,6 +163,9 @@ export const addQuickFilters = async (quickFiltersSibling) => {
   appendQuickFilterButton(quickFiltersContainer, "Nick", "Custom filters" , "Tester is Nick");
   appendQuickFilterButton(quickFiltersContainer, "PJ", "Custom filters" , "Tester is PJ");
   appendQuickFilterButton(quickFiltersContainer, "None", "Custom filters" , "No Tester");
+
+  appendQuickFilterLabel(quickFiltersContainer, "MISC:");
+  appendQuickFilterButton(quickFiltersContainer, "Flagged", "Custom filters" , "Flagged");
   
   quickFilterWrapper.appendChild(quickFiltersContainer);
 
