@@ -153,6 +153,10 @@ export const getIssueData = async (issueKeys, fields=[]) => {
   
 }
 
+export const isFlagged = (issueData) => {
+  return issueData[JIRA_FIELDS_ID][JIRA_FIELD_IDS.FLAGGED];
+}
+
 export const isBug = (issueData) => {
   const isBug = issueData[JIRA_FIELDS_ID][JIRA_FIELD_IDS.ISSUE_TYPE][JIRA_FIELD_IDS.ID] === JIRA_ISSUE_TYPES.BUG;
   return isBug;

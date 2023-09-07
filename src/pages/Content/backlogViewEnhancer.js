@@ -191,7 +191,7 @@ const updateBacklogCardAlertsIndicator = (backlogCard, alerts) => {
    
   // Add the alerts indicator if there are alerts
   if(alerts.length) {
-    const alertIndicatorInsertionPoint = backlogCard.children.item(5).children.item(1);
+    const alertIndicatorInsertionPoint = backlogCard.children.item(5);
 
     const alertsIndicatorWrapper = document.createElement("div");
     alertsIndicatorWrapper.setAttribute("style", "position:relative;");
