@@ -24,8 +24,8 @@ export default ({alerts}) => {
     <Tooltip content={tooltipContent}>
       {(tooltipProps) => (
         <div {...tooltipProps}>
-          <span class="css-1kdtj8v" style={{backgroundColor: "yellow"}}>
-            <span class="css-1yqht91">!</span>
+          <span style={{"backgroundColor":"yellow", "padding-inline":"var(--ds-space-075, 6px)", "border-radius": "var(--ds-border-radius-200, 8px)"}}>
+            <span>!</span>
           </span>
         </div>
       )}
