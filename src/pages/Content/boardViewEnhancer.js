@@ -26,7 +26,7 @@ export const isBoardView = () => {
  */
 export const handleBoardViewMutation = async (mutation) => {
 
-  addQuickFilters(document.querySelector('[data-test-id="software-board.header.controls-bar"]').parentElement.parentElement);
+  addQuickFilters(document.querySelector('[data-testid="software-board.header.controls-bar"]').parentElement.parentElement);
 
   enhanceSelectedIssueCards(BOARD_CARDS_SELECTOR, enhanceBoardCards);
 
