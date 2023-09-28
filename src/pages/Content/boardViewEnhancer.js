@@ -330,7 +330,12 @@ const handleBoardIssueEditorDialogClosing = (mutation) => {
  * @returns 
  */
 const isBoardIssueEditorDialog = (node) => {
-  return node.nodeType === Node.ELEMENT_NODE && node.getAttribute(`class`) === ` css-12aymf5`;
+  if (node.nodeType === Node.ELEMENT_NODE &&  node.querySelector(`*[role='dialog']`)) {
+    return true;
+  }
+  else {
+    return false
+  }
 }
 
 /**
