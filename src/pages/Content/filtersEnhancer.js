@@ -81,7 +81,7 @@ const getCheckedMenuItems = async (menuName) => {
   const checkedMenuItems = [];
 
   // Wait for the drop down menu to exist
-  const filterMenu = (await waitForElementToExist(`div [id^="ds--dropdown"]`));
+  const filterMenu = (await waitForElementToExist(`div [id="popup-select-nested-list-filter"]`));
 
   // Get the checked menu item elements
   const menuItemChecks = filterMenu.querySelectorAll(`[id^="react-select-"] > div > span[style*="selected"]`);
@@ -249,7 +249,7 @@ const  handleFilterMenuClosed = (mutation) => {
         if(node.nodeType === 1) {
           
           // See if this removed node is a manually opened drop down menu
-          const manuallyOpenedDropDownMenu = node.closest(`[id^="ds--dropdown"]:not([automated])`);
+          const manuallyOpenedDropDownMenu = node.querySelector(`[id="popup-select-nested-list-filter"]:not([automated])`);          
 
           // If a manually opened drop down menu was removed, then sync the quick filters with the menu 
           if(manuallyOpenedDropDownMenu) {
@@ -365,7 +365,7 @@ const toggleFilterMenuItem = async (filterMenuName, filterMenuItemName) => {
  
   // Click the specified menu item
   await clickFilterMenuItem(filterMenuItemName);
- 
+
   // Close the filter menu
    await closeFilterMenus();
 
@@ -384,7 +384,7 @@ const openFilterMenu = async (filterMenuName) => {
   clickFilterMenuButton(filterMenuName)
 
   // Wait for the corresponding menu to exist
-  const dropDownMenu =(await waitForElementToExist(`[id^="ds--dropdown"]`));
+  const dropDownMenu =(await waitForElementToExist(`[id="popup-select-nested-list-filter"]`));
 
   // Set an attribute on the menu flagging it as having been opened via an automated process.
   // This is so the filter menu closed handler can distinguish between menus that have been opened
@@ -442,10 +442,10 @@ const clickFilterMenuButton = async (filterMenuName) => {
 const clickFilterMenuItem = async (filterMenuItemName) => {
   // Get the open menu
   // NOTE: This assumes the filter menu button has been clicked and the menu will exist. Could add some error handling/time out here
-  await waitForElementToExist(`[id^="ds--dropdown"]`);
+  await waitForElementToExist(`[id="popup-select-nested-list-filter"]`);
   
   // Get the list of menu item elements                  
-  const filterMenuItemEls = document.querySelectorAll(`[data-testid="filters.common.ui.list.menu.list"]`);
+  const filterMenuItemEls = document.querySelectorAll(`[data-testid="filters.common.ui.list.option"]`);
   
   // Iterate over the menu item elements
   for (var i = 0; i < filterMenuItemEls.length; ++i) {    
