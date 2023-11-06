@@ -21,8 +21,12 @@ const syncQuickFilterButtonsWithFilterMenu = async (filterMenuName) => {
   // Open the filter menu
   await openFilterMenu(filterMenuName);
 
+  console.log(`syncQuickFilterButtonsWithFilterMenu 3`);
+
   // Get the checked filter menu items
   const checkedMenuItems = await getCheckedMenuItems(filterMenuName);
+
+  console.log(`syncQuickFilterButtonsWithFilterMenu 4`);
 
   
   await closeFilterMenu(filterMenuName);
@@ -62,7 +66,7 @@ const deactivateAllQuickFilterButtons = () => {
 const syncQuickFilters = async () => {
   // TODO: For now we just support "Custom filters" based Quick Filters.
   // Syncing *all* of the filters here causes annoying flash. Come back to this when/if
-  // we want to support filters.
+  // we want to support other filters.
 
   //await syncQuickFilterButtonsWithFilterMenu("Version");
   //await syncQuickFilterButtonsWithFilterMenu("Epic");
@@ -81,19 +85,24 @@ const getCheckedMenuItems = async (menuName) => {
   const checkedMenuItems = [];
 
   // Wait for the drop down menu to exist
-  const filterMenu = (await waitForElementToExist(`div [id="popup-select-nested-list-filter"]`));
+  const filterMenu = (await waitForElementToExist(`div [id$="-popup-select"]`));
 
+  console.log(`getCheckedMenuItems 0`);
   // Get the checked menu item elements
   const menuItemChecks = filterMenu.querySelectorAll(`[id^="react-select-"] > div > span[style*="selected"]`);
   
+  console.log(`getCheckedMenuItems 1`);
+
   // Get the menu items names associated with each check
   menuItemChecks.forEach(
     menuItemCheck => {
       const menuItemName = menuItemCheck.parentElement.parentElement.textContent;
+      console.log(`getCheckedMenuItems: ${menuItemName}`);
       checkedMenuItems.push(menuItemName);
     }
   );
 
+  console.log(`getCheckedMenuItems 2`);
   return checkedMenuItems;
 }
 
@@ -247,12 +256,14 @@ const  handleFilterMenuClosed = (mutation) => {
     removedNodes.forEach(
       node => {
         if(node.nodeType === 1) {
-          
+          console.log(`handleFilterMenuClosed 1`);
           // See if this removed node is a manually opened drop down menu
-          const manuallyOpenedDropDownMenu = node.querySelector(`[id="popup-select-nested-list-filter"]:not([automated])`);          
-
+          //const manuallyOpenedDropDownMenu = node.querySelector(`[id$="-popup-select"]:not([automated])`);          
+          const manuallyOpenedDropDownMenu = node.closest(`[id$="-popup-select"]:not([automated])`);          
+          console.log(`handleFilterMenuClosed 2`);
           // If a manually opened drop down menu was removed, then sync the quick filters with the menu 
           if(manuallyOpenedDropDownMenu) {
+            console.log(`handleFilterMenuClosed 3`);
             syncQuickFilters();
           }
         }
@@ -384,7 +395,7 @@ const openFilterMenu = async (filterMenuName) => {
   clickFilterMenuButton(filterMenuName)
 
   // Wait for the corresponding menu to exist
-  const dropDownMenu =(await waitForElementToExist(`[id="popup-select-nested-list-filter"]`));
+  const dropDownMenu =(await waitForElementToExist(`[id$="-popup-select"]`));
 
   // Set an attribute on the menu flagging it as having been opened via an automated process.
   // This is so the filter menu closed handler can distinguish between menus that have been opened
@@ -442,10 +453,10 @@ const clickFilterMenuButton = async (filterMenuName) => {
 const clickFilterMenuItem = async (filterMenuItemName) => {
   // Get the open menu
   // NOTE: This assumes the filter menu button has been clicked and the menu will exist. Could add some error handling/time out here
-  await waitForElementToExist(`[id="popup-select-nested-list-filter"]`);
+  const filterMenu = (await waitForElementToExist(`div [id$="-popup-select"]`));   
   
   // Get the list of menu item elements                  
-  const filterMenuItemEls = document.querySelectorAll(`[data-testid="filters.common.ui.list.option"]`);
+  const filterMenuItemEls = filterMenu.querySelectorAll(`[id^="react-select-"]`);
   
   // Iterate over the menu item elements
   for (var i = 0; i < filterMenuItemEls.length; ++i) {    

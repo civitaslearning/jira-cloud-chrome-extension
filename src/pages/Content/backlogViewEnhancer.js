@@ -21,8 +21,8 @@ export const isBacklogView = () => {
  * @returns 
  */
 export const handleBacklogViewMutation = async (mutation) => {
-  addQuickFilters(document.querySelector('[data-test-id="software-filters.ui.list-filter-container"]').parentElement.parentElement.parentElement.parentElement);
-
+  addQuickFilters(document.querySelector('[data-testid="software-filters.ui.list-filter-container"]').parentElement.parentElement.parentElement.parentElement);
+                                                        
   const BACKLOG_CARDS_SELECTOR = '[data-test-id="software-backlog.backlog-content.scrollable"] *[data-test-id^="software-backlog.card-list.card.content-container"]';
   enhanceSelectedIssueCards(BACKLOG_CARDS_SELECTOR, enhanceBacklogCards);
 
