@@ -144,7 +144,6 @@ export const addQuickFilters = async (quickFiltersSibling) => {
   appendQuickFilterButton(quickFiltersContainer, "Edward", "Custom filters" , "Owned By Edward");
   appendQuickFilterButton(quickFiltersContainer, "Eric", "Custom filters" , "Owned By Eric");
   appendQuickFilterButton(quickFiltersContainer, "Gus", "Custom filters" , "Owned By Gus");
-  appendQuickFilterButton(quickFiltersContainer, "Kei", "Custom filters" , "Owned By Kei");
   appendQuickFilterButton(quickFiltersContainer, "Melissa", "Custom filters" , "Owned By Melissa");
   appendQuickFilterButton(quickFiltersContainer, "Nick", "Custom filters" , "Owned By Nick");
   appendQuickFilterButton(quickFiltersContainer, "PJ", "Custom filters" , "Owned By PJ");
