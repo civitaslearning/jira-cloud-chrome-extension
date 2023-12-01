@@ -125,8 +125,8 @@ const getIssueKeyFromBoardCard = boardCard => {
  * @param {*} boardIssueData 
  */
 const applyBoardCardEnhancements = (boardCard, boardIssueData) => {
-  applyIssueCardEnhancements(boardCard, boardIssueData, enhanceBoardCard);
-}
+    applyIssueCardEnhancements(boardCard, boardIssueData, enhanceBoardCard);
+  }
 
 /**
  * Enhances a board card
@@ -146,8 +146,8 @@ const enhanceBoardCard = (boardCard, boardIssueData) => {
     cardColor = "#fafad2";
   }
   updateBoardCardAlertsIndicator(boardCard, alerts);
-  updateAvatar(JIRA_FIELD_IDS.TESTER, "Tester", boardCard, boardIssueData);
-  updateAvatar(JIRA_FIELD_IDS.OWNER, "Owner", boardCard, boardIssueData);
+    updateAvatar(JIRA_FIELD_IDS.TESTER, "Tester", boardCard, boardIssueData);
+    updateAvatar(JIRA_FIELD_IDS.OWNER, "Owner", boardCard, boardIssueData);
 
   const backlogCardContainer = boardCard.querySelectorAll(`*[data-test-id='platform-card.ui.card.focus-container']`)?.item(0);
   colorizeCard(backlogCardContainer, cardColor);
@@ -175,7 +175,7 @@ const positionAvatar = (boardCard, avatarWrapper) => {
 }
 
 const getBoardCardAvatarWrapper = (boardCard, fieldId) => {
-  return boardCard?.querySelector(`[id="${fieldId}"]`);
+    return boardCard?.querySelector(`[id="${fieldId}"]`);
 }
 
 const updateAvatar = (jiraFieldId, fieldDisplayName, boardCard, issueData) => {
@@ -189,8 +189,8 @@ const updateAvatar = (jiraFieldId, fieldDisplayName, boardCard, issueData) => {
 
   avatarWrapper = document.createElement("div");
   avatarWrapper.setAttribute("id", jiraFieldId);
-  
-  positionAvatar(boardCard, avatarWrapper);
+
+    positionAvatar(boardCard, avatarWrapper);
 
   console.log(`jce: updateAvatar: ${JSON.stringify(issueData.fields, null, 2)}`);
 
@@ -364,23 +364,23 @@ const getBoardCardFromIssueKey = (issueKey) => {
  * @returns 
  */
 const handleBoardCardAlertIndicatorOutOfPlace = (mutation) => {
-  const boardCard = getClosestBoardCard(mutation.target);
+    const boardCard = getClosestBoardCard(mutation.target);
 
-  if(!boardCard) {
+    if(!boardCard) {
     return;
   }
-  const alertsIndicatorInsertionPoint = getBoardCardAlertsIndicatorWrapper(boardCard);
+    const alertsIndicatorInsertionPoint = getBoardCardAlertsIndicatorWrapper(boardCard);
 
-  if(alertsIndicatorInsertionPoint) {
+    if(alertsIndicatorInsertionPoint) {
 
     const alertsIndicatorInsertionPointParent = alertsIndicatorInsertionPoint.parentElement;
 
-    if(alertsIndicatorInsertionPointParent.lastElementChild != alertsIndicatorInsertionPoint) {
+        if(alertsIndicatorInsertionPointParent.lastElementChild != alertsIndicatorInsertionPoint) {
 
-      positionAlertsIndicator(boardCard, alertsIndicatorInsertionPoint);
+            positionAlertsIndicator(boardCard, alertsIndicatorInsertionPoint);
     }
   }
-}
+  }
 
 
 /**
@@ -390,7 +390,7 @@ const handleBoardCardAlertIndicatorOutOfPlace = (mutation) => {
  * @returns 
  */
 const getClosestBoardCard = boardCardElement => {
-  return boardCardElement.closest(`[id^="card-"][data-test-id="platform-board-kit.ui.card.card"]`);
+  return boardCardElement.closest(`[id^="card-"][data-testid="platform-board-kit.ui.card.card"]`);
 }
 
 /**
