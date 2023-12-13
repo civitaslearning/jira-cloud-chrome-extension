@@ -94,16 +94,16 @@ const enhanceBacklogCard = (backlogCard, backlogIssueData) => {
 
   var cardColor;
   if(backlogIssueData.fields["labels"].includes("needs_info")){
-    cardColor = "#ffdbff";
+    cardColor = "#ffdbff"; // purple
   }
   else if( isReadyToWork(backlogIssueData) ){
-    cardColor = "#c1e1c1";
+    cardColor = "#c1e1c1"; // green
   } else if( isReadyToEstimate(backlogIssueData) ){
-    cardColor = "#daf0f7";
+    cardColor = "#daf0f7"; // blue
   } else if ( isCutLine(backlogIssueData) ){
-    cardColor = "#ffc09f";
+    cardColor = "#ffc09f"; // orange
   } else {
-    cardColor = "#fafad2";
+    cardColor = "#fafad2"; // yellow
   }
 
   colorizeCard(backlogCardContainer, cardColor);

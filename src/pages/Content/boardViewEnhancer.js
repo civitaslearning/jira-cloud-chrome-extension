@@ -5,12 +5,14 @@ import { createRoot } from 'react-dom/client';
 import {JIRA_FIELD_IDS, JIRA_LABELS, getLabels, isBug, isDone, isReadyForQA, isFlagged} from './jiraApiUtils'
 import { enhanceIssueCards, enhanceSelectedIssueCards, applyIssueCardEnhancements } from './jiraViewEnhancer';
 import { addQuickFilters, handleQuickFiltersMutation } from './filtersEnhancer';
+import Markdown from 'react-markdown'
+
 
 const BOARD_CARDS_SELECTOR = '*[data-test-id="software-board.board"] *[data-testid="platform-board-kit.ui.card.card"]';
 
 const ALERTS_INDICATOR_WRAPPER_ID = 'ALERTS_INDICATOR_WRAPPER_ID';
 
-
+const SPRINT_GOALS_MARKDOWN_WRAPPER_ID="SPRINT_GOALS_MARKDOWN_WRAPPER_ID";
 /**
  * Returns true if the Jira board is diplayed 
  * 
@@ -19,6 +21,75 @@ const ALERTS_INDICATOR_WRAPPER_ID = 'ALERTS_INDICATOR_WRAPPER_ID';
 export const isBoardView = () => {
   return !!document.querySelector('[data-test-id="software-board.board"]');
 }
+
+/**
+ * Gets the DOM element that wraps the sprint goals markdown
+ * 
+ * @returns 
+ */
+const getSprintGoalsMarkdownWrapper = () => {
+  return document.querySelector(`[id="${SPRINT_GOALS_MARKDOWN_WRAPPER_ID}"]`);
+}
+
+
+/**
+ * Adds the Sprint Goals Markdown if necessary
+ * 
+ * @returns 
+ */
+const addSprintGoalsMarkdown = () => {
+  const unformattedSprintGoalsEl = getUnformattedSprintGoalsEl();
+  // If the sprint goals markdown has alreay been added, do nothing
+  if( !unformattedSprintGoalsEl || getSprintGoalsMarkdownWrapper() ) {
+    return;
+  }
+  // Hide Jira's built in unformatted sprint goals element
+  unformattedSprintGoalsEl.style.display="none";
+
+  // Create the wrapper element for the sprint goals markdown component
+  const sprintGoalsMarkdownWrapper = document.createElement("div");
+  sprintGoalsMarkdownWrapper.setAttribute("id", SPRINT_GOALS_MARKDOWN_WRAPPER_ID);  
+  
+  // Add the sprint goals mark down wrapper as a sibling to the unformatted sprint goals element
+  unformattedSprintGoalsEl.insertAdjacentElement(`afterend`, sprintGoalsMarkdownWrapper);
+
+  updateGoalsMarkdown();
+  
+}
+
+/**
+ * Gets the element Jira uses to display the unformatted sprint goals
+ * 
+ * @returns 
+ */
+const getUnformattedSprintGoalsEl = () => {
+  const titleParentEl = document.querySelector(`[data-testid="software-board.header.title.container"]`).parentElement;
+  
+  const sprintGoalsEl = titleParentEl.querySelector(`:scope > :not(#${SPRINT_GOALS_MARKDOWN_WRAPPER_ID}):not([data-testid="software-board.header.title.container"])`);
+
+  /*if(sprintGoalsEl) {
+    sprintGoalsEl.style.display="none";
+  }*/
+  return sprintGoalsEl;
+}
+
+const updateGoalsMarkdown = () => {
+  const unformattedSprintGoalsEl = getUnformattedSprintGoalsEl();
+  const sprintGoalsMarkdownWrapper = getSprintGoalsMarkdownWrapper()
+  
+  // Hide the unformatted sprint goals element if it exists
+  if(unformattedSprintGoalsEl) {
+    unformattedSprintGoalsEl.style.display="none";
+  }
+
+  // Remove the old sprint goals markdown component, if any
+  sprintGoalsMarkdownWrapper?.firstChild?.remove();
+
+  // Render insert and render the sprint goals markdown component
+  const sprintGoalsMarkdownRoot = createRoot(sprintGoalsMarkdownWrapper);
+  sprintGoalsMarkdownRoot.render(<Markdown>{unformattedSprintGoalsEl?.innerText??""}</Markdown>);
+}
+
 /**
  * Handles mutation of the Jira board view
  * 
@@ -27,6 +98,8 @@ export const isBoardView = () => {
 export const handleBoardViewMutation = async (mutation) => {
 
   addQuickFilters(document.querySelector('[data-testid="software-board.header.controls-bar"]').parentElement.parentElement);
+
+  addSprintGoalsMarkdown();
 
   enhanceSelectedIssueCards(BOARD_CARDS_SELECTOR, enhanceBoardCards);
 
@@ -37,6 +110,8 @@ export const handleBoardViewMutation = async (mutation) => {
   handleInlineBoardIssueEdits(mutation);
 
   handleQuickFiltersMutation(mutation);
+
+  handleSprintEditorDialogClosing(mutation);
 }
 
 /**
@@ -137,14 +212,16 @@ const applyBoardCardEnhancements = (boardCard, boardIssueData) => {
 const enhanceBoardCard = (boardCard, boardIssueData) => {
 
   console.log(`jce: enhanceBoardCard 1 :${boardCard}`);
-  var cardColor = "#c1e1c1";
+  var cardColor = "#c1e1c1"; //green
 
   const alerts = getBoardIssueAlerts(boardIssueData);
 
   console.log(`jce: enhanceBoardCard 2`);
   if(alerts.length) {
-    cardColor = "#fafad2";
+    cardColor = "#fafad2"; //yellow
   }
+
+  
   updateBoardCardAlertsIndicator(boardCard, alerts);
     updateAvatar(JIRA_FIELD_IDS.TESTER, "Tester", boardCard, boardIssueData);
     updateAvatar(JIRA_FIELD_IDS.OWNER, "Owner", boardCard, boardIssueData);
@@ -315,12 +392,41 @@ const handleBoardIssueEditorDialogClosing = (mutation) => {
         console.log(`jce: foundIssueIdContainer: ${issueKey}`);
 
         enhanceBoardCards([getBoardCardFromIssueKey(issueKey)]);
-        
       }
     }
   );
 }
 
+/**
+ * Handles when the sprint editor dialog closes
+ * 
+ * @param {*} mutation 
+ */
+const handleSprintEditorDialogClosing = (mutation) => {
+
+  mutation.removedNodes.forEach(
+    removedNode => {
+      if( isSprintEditorDialog(removedNode)) {
+        // Updates the sprint goals
+        updateGoalsMarkdown();
+      }
+    }
+  );
+}
+
+/**
+ * Returns true if the node is the sprint editor dialog
+ * 
+ * @param {*} node 
+ * @returns 
+ */
+const isSprintEditorDialog = (node) => {
+  return  (
+      node.nodeType === Node.ELEMENT_NODE &&  
+      node.querySelector(`*[role='dialog']`) && 
+      node.querySelector(`span[id^='modal-dialog-title']`)?.innerText?.startsWith(`Edit sprint:`)
+    );
+}
 
 
 /**
@@ -330,12 +436,11 @@ const handleBoardIssueEditorDialogClosing = (mutation) => {
  * @returns 
  */
 const isBoardIssueEditorDialog = (node) => {
-  if (node.nodeType === Node.ELEMENT_NODE &&  node.querySelector(`*[role='dialog']`)) {
-    return true;
-  }
-  else {
-    return false
-  }
+  return (
+    node.nodeType === Node.ELEMENT_NODE &&  
+    node.querySelector(`*[role='dialog']`) && 
+    getIssueKeyFromBoardIssueEditorDialog(node)
+  );
 }
 
 /**
@@ -345,7 +450,7 @@ const isBoardIssueEditorDialog = (node) => {
  * @returns 
  */
 const getIssueKeyFromBoardIssueEditorDialog = (boardIssueEditorDialog) => {
-  return boardIssueEditorDialog.querySelector(`*[data-testid='issue.views.issue-base.foundation.breadcrumbs.current-issue.item'] span`).textContent;
+  return boardIssueEditorDialog?.querySelector(`*[data-testid='issue.views.issue-base.foundation.breadcrumbs.current-issue.item'] span`)?.textContent;
 }
 
 /**
