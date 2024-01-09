@@ -5,7 +5,9 @@ import { createRoot } from 'react-dom/client';
 import {JIRA_FIELD_IDS, JIRA_LABELS, getLabels, isBug, isDone, isReadyForQA, isFlagged} from './jiraApiUtils'
 import { enhanceIssueCards, enhanceSelectedIssueCards, applyIssueCardEnhancements } from './jiraViewEnhancer';
 import { addQuickFilters, handleQuickFiltersMutation } from './filtersEnhancer';
-import Markdown from 'react-markdown'
+import { Accordion, AccordionDetails, AccordionSummary } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Markdown from 'react-markdown';
 
 
 const BOARD_CARDS_SELECTOR = '*[data-test-id="software-board.board"] *[data-testid="platform-board-kit.ui.card.card"]';
@@ -87,7 +89,55 @@ const updateGoalsMarkdown = () => {
 
   // Render insert and render the sprint goals markdown component
   const sprintGoalsMarkdownRoot = createRoot(sprintGoalsMarkdownWrapper);
-  sprintGoalsMarkdownRoot.render(<Markdown>{unformattedSprintGoalsEl?.innerText??""}</Markdown>);
+  
+  const sprintGoalsText = unformattedSprintGoalsEl?.innerText??"";
+  /*sprintGoalsMarkdownRoot.render(<Markdown><Accordion/>{unformattedSprintGoalsEl?.innerText??""}</Markdown>
+  );*/
+  sprintGoalsMarkdownRoot.render(
+    <Accordion  elevation={0} disableGutters={true}>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel2a-content"
+          id="panel2a-header"
+          sx={{
+            minHeight: 0,
+            "&.Mui-expanded": {
+              minHeight: 0
+            },
+            "& .MuiAccordionSummary-content": {
+              margin: 0,
+            },
+            "& .MuiAccordionSummary-content.Mui-expanded": {
+              margin: 0
+            }
+          }}
+  
+        >
+          <Markdown>{getSprintGoalsSummary(sprintGoalsText)}</Markdown>
+        </AccordionSummary>
+        <AccordionDetails
+          sx={{
+            paddingTop: 0,
+            paddingBottom: 0
+          }}
+        >
+          <Markdown>{getSprintGoalsDetails(sprintGoalsText)}</Markdown>
+        </AccordionDetails>
+      </Accordion>
+    
+  );
+}
+
+const getSprintGoalsSummary = (sprintGoalsText) => {
+  const lineBreakIndex = sprintGoalsText.indexOf(`\\`);
+
+  return lineBreakIndex>=0?sprintGoalsText.substring(0, lineBreakIndex):sprintGoalsText;
+}
+
+const getSprintGoalsDetails = (sprintGoalsText) => {
+  const lineBreakIndex = sprintGoalsText.indexOf(`\\`);
+
+  return lineBreakIndex>=0?sprintGoalsText.substring(lineBreakIndex+1):sprintGoalsText;
 }
 
 /**
