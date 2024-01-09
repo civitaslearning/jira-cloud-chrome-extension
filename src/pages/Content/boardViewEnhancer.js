@@ -140,6 +140,11 @@ const getSprintGoalsDetails = (sprintGoalsText) => {
   return lineBreakIndex>=0?sprintGoalsText.substring(lineBreakIndex+1):sprintGoalsText;
 }
 
+const adjustControlsBarMargins = (controlsBarEl) => {
+  controlsBarEl?.parentElement?.setAttribute("style", `margin-bottom:0;`);  
+  controlsBarEl?.parentElement?.parentElement?.setAttribute("style", `margin-top:0;`);  
+}
+
 /**
  * Handles mutation of the Jira board view
  * 
@@ -147,7 +152,10 @@ const getSprintGoalsDetails = (sprintGoalsText) => {
  */
 export const handleBoardViewMutation = async (mutation) => {
 
-  addQuickFilters(document.querySelector('[data-testid="software-board.header.controls-bar"]').parentElement.parentElement);
+  const controlsBarEl = document.querySelector('[data-testid="software-board.header.controls-bar"]');
+  addQuickFilters(controlsBarEl.parentElement.parentElement);
+
+  adjustControlsBarMargins(controlsBarEl);
 
   addSprintGoalsMarkdown();
 

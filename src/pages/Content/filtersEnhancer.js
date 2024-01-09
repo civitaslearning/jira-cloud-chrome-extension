@@ -504,7 +504,7 @@ const quickFilterButtonStyleRules =`
 
 .quick-filters-container{
   display: inline-block;
-  padding: 10px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
   margin: 0px;
 }
 
