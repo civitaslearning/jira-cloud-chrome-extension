@@ -7,19 +7,30 @@
 - Colorizes board and backlog cards
 - Adds Quickfilters to board and backlog views
 - Adds alerts to board and backlog cards
+- Support for markdown in the Sprint Goal
 
-## Installing and Running
+## Installing a Release
 
-1. Check if your [Node.js](https://nodejs.org/) version is >= **18**.
+To just install this extension you may do the following:
+
+1. Download the extension `releases` folder by browsing to:  
+   https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Fcivitaslearning%2Fjira-cloud-chrome-extension%2Ftree%2Fmaster%2Freleases)
+2. Unzip the downloaded file
+3. In Chrome, browse to `chrome://extensions/`
+4. Check `Developer mode`
+5. Click on `Load unpacked extension`
+6. In the `Select the extension directory` dialog browse to the directory you unzipped in step 2 and select the version you want to install
+
+## Development
+
+1. Ensure your [Node.js](https://nodejs.org/) version is >= **18**.
 2. Clone this repository.
-5. Run `npm install --legacy-peer-deps` to install the dependencies.
-6. Run `npm run build`
-7. Load your extension on Chrome following:
-   1. Access `chrome://extensions/`
-   2. Check `Developer mode`
-   3. Click on `Load unpacked extension`
-   4. Select the `build` folder.
-
+3. Run `npm install --legacy-peer-deps` to install the dependencies.
+4. Run `npm run build`
+5. In Chrome, browse to `chrome://extensions/`
+6. Check `Developer mode`
+7. Click on `Load unpacked extension`
+8. Select the `build` folder.
 
 ## Developer Resources
 
