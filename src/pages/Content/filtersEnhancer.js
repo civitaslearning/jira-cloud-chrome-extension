@@ -139,16 +139,14 @@ export const addQuickFilters = async (quickFiltersSibling) => {
   quickFiltersTitle.textContent = "Quick Filters:"
   quickFiltersContainer.appendChild(quickFiltersTitle);
 
-  appendQuickFilterLabel(quickFiltersContainer, "OWNER:");
-  appendQuickFilterButton(quickFiltersContainer, "Chris", "Custom filters" , "Owned By Chris");
-  appendQuickFilterButton(quickFiltersContainer, "Edward", "Custom filters" , "Owned By Edward");
-  appendQuickFilterButton(quickFiltersContainer, "Eric", "Custom filters" , "Owned By Eric");
-  appendQuickFilterButton(quickFiltersContainer, "Gus", "Custom filters" , "Owned By Gus");
-  appendQuickFilterButton(quickFiltersContainer, "Melissa", "Custom filters" , "Owned By Melissa");
-  appendQuickFilterButton(quickFiltersContainer, "Nick", "Custom filters" , "Owned By Nick");
-  appendQuickFilterButton(quickFiltersContainer, "PJ", "Custom filters" , "Owned By PJ");
-  appendQuickFilterButton(quickFiltersContainer, "None", "Custom filters" , "No Owner");
-
+  appendQuickFilterButton(quickFiltersContainer, "Chris", "Custom filters" , "Chris");
+  appendQuickFilterButton(quickFiltersContainer, "Edward", "Custom filters" , "Edward");
+  appendQuickFilterButton(quickFiltersContainer, "Eric", "Custom filters" , "Eric");
+  appendQuickFilterButton(quickFiltersContainer, "Gus", "Custom filters" , "Gus");
+  appendQuickFilterButton(quickFiltersContainer, "Melissa", "Custom filters" , "Melissa");
+  appendQuickFilterButton(quickFiltersContainer, "Nick", "Custom filters" , "Nick");
+  appendQuickFilterButton(quickFiltersContainer, "PJ", "Custom filters" , "PJ");
+  
   appendQuickFilterLabel(quickFiltersContainer, "FOCUS GROUP:");
   appendQuickFilterButton(quickFiltersContainer, "Application", "Custom filters" , "Application Focus Group");
   appendQuickFilterButton(quickFiltersContainer, "Cost/Data", "Custom filters" , "Cost Optimization and Data Integration Focus Group");
@@ -156,25 +154,24 @@ export const addQuickFilters = async (quickFiltersSibling) => {
   appendQuickFilterButton(quickFiltersContainer, "None", "Custom filters" , "No Focus Group");
 
   appendQuickFilterLabel(quickFiltersContainer, "PLANNING:");
-  appendQuickFilterButton(quickFiltersContainer, "Ready to Estimate", "Custom filters" , "Ready to Estimate");
+  appendQuickFilterButton(quickFiltersContainer, "Unsorted", "Custom filters" , "Unsorted");
   appendQuickFilterButton(quickFiltersContainer, "Not Ready", "Custom filters" , "Not Ready to Estimate");
   appendQuickFilterButton(quickFiltersContainer, "Needs Info", "Custom filters" , "Needs Info");
+  appendQuickFilterButton(quickFiltersContainer, "Ready to Estimate", "Custom filters" , "Ready to Estimate");
   appendQuickFilterButton(quickFiltersContainer, "Ready to Work", "Custom filters" , "Ready to Work");
   appendQuickFilterButton(quickFiltersContainer, "Not Done", "Custom filters" , "Not Done");
   
-  appendQuickFilterLabel(quickFiltersContainer, "TESTER:");
-  appendQuickFilterButton(quickFiltersContainer, "Chris", "Custom filters" , "Tester is Chris");
-  appendQuickFilterButton(quickFiltersContainer, "Edward", "Custom filters" , "Tester is Edward");
-  appendQuickFilterButton(quickFiltersContainer, "Eric", "Custom filters" , "Tester is Eric");
-  appendQuickFilterButton(quickFiltersContainer, "Gus", "Custom filters" , "Tester is Gus");
-  appendQuickFilterButton(quickFiltersContainer, "Melissa", "Custom filters" , "Tester is Melissa");
-  appendQuickFilterButton(quickFiltersContainer, "Nick", "Custom filters" , "Tester is Nick");
-  appendQuickFilterButton(quickFiltersContainer, "PJ", "Custom filters" , "Tester is PJ");
-  appendQuickFilterButton(quickFiltersContainer, "None", "Custom filters" , "No Tester");
-
+  
+  appendQuickFilterLabel(quickFiltersContainer, "COURSE DEMAND:");
+  appendQuickFilterButton(quickFiltersContainer, "Course Demand", "Custom filters" , "Course Demand");
+  appendQuickFilterButton(quickFiltersContainer, "Not Course Demand", "Custom filters" , "Not Course Demand");
+  appendQuickFilterButton(quickFiltersContainer, "GA", "Custom filters" , "Course Demand GA");
+  appendQuickFilterButton(quickFiltersContainer, "Post GA", "Custom filters" , "Course Demand Post GA");
+    
   appendQuickFilterLabel(quickFiltersContainer, "MISC:");
   appendQuickFilterButton(quickFiltersContainer, "Flagged", "Custom filters" , "Flagged");
-  
+  appendQuickFilterButton(quickFiltersContainer, "Bugs", "Custom filters" , "Bugs");
+    
   quickFilterWrapper.appendChild(quickFiltersContainer);
 
   // Add the quick filters to the DOM
