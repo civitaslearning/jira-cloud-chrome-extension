@@ -1,6 +1,6 @@
 {
   "name": "jira-cloud-chrome-extension",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A Chrome browser extension that extends Jira Cloud functionality",
   "license": "MIT",
   "repository": {

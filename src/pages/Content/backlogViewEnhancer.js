@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import {JIRA_FIELD_IDS, JIRA_STATUSES, getLabels} from './jiraApiUtils'
+import {JIRA_FIELD_IDS, JIRA_LABELS, JIRA_STATUSES, getLabels} from './jiraApiUtils'
 import { enhanceIssueCards, enhanceSelectedIssueCards, applyIssueCardEnhancements } from './jiraViewEnhancer';
 import { addQuickFilters, handleQuickFiltersMutation} from './filtersEnhancer';
 import AlertsIndicator from './AlertsIndicator';
@@ -93,7 +93,7 @@ const enhanceBacklogCard = (backlogCard, backlogIssueData) => {
   const backlogCardContainer = backlogCard.querySelectorAll(`*[data-testid='software-backlog.card-list.card.card-contents.card-container']`)?.item(0);
 
   var cardColor;
-  if(backlogIssueData.fields["labels"].includes("needs_info")){
+  if(backlogIssueData.fields["labels"].some( el => [JIRA_LABELS.NEEDS_WORK, JIRA_LABELS.NEEDS_DESIGN].includes(el))){
     cardColor = "#ffdbff"; // purple
   }
   else if( isReadyToWork(backlogIssueData) ){
@@ -113,7 +113,7 @@ const enhanceBacklogCard = (backlogCard, backlogIssueData) => {
 }
 
 const isReadyToWork = (backlogIssueData) => {
-  return backlogIssueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE] || backlogIssueData.fields["labels"].includes("wont_estimate");
+  return backlogIssueData.fields[JIRA_FIELD_IDS.STORY_POINT_ESTIMATE] || backlogIssueData.fields["labels"].includes("ready_to_work");
 }
 
 const isReadyToEstimate = (backlogIssueData) => {
@@ -151,6 +151,9 @@ const getStatusId = (backlogIssueData) => {
 const getBacklogIssueAlerts = (backlogIssueData) => {
   const backlogIssueAlerts = [];
 
+  if( isCutLine(backlogIssueData) ) {
+    return backlogIssueAlerts;
+  }
   
   if( !isReadyToWork(backlogIssueData) && !isReadyToEstimate(backlogIssueData) ) {
 
@@ -165,19 +168,11 @@ const getBacklogIssueAlerts = (backlogIssueData) => {
   if( ownerName != assigneeName && getStatusId(backlogIssueData) === JIRA_STATUSES.TO_DO){
     backlogIssueAlerts.push(`Owner (${ownerName?ownerName:"None"}) != Assignee (${assigneeName?assigneeName:"None"})`);
   }
-
-  /*
-  if(issueData.fields[JIRA_FIELD_IDS.OWNER].l) {
-    if(issueData.fields[JIRA_FIELD_IDS.OWNER][0]?.displayName != issueData.fields[JIRA_FIELD_IDS.ASSIGNEE]?.displayName ) {
-    backlogIssueAlerts.push(`Owner: ${issueData.fields[JIRA_FIELD_IDS.OWNER]?.displayName } != Assignee: ${issueData.fields[JIRA_FIELD_IDS.ASSIGNEE]?.displayName}`);
-  } else if (issueData.fields[JIRA_FIELD_IDS.ASSIGNEE]) {
-    backlogIssueAlerts.push(`Owner: != Assignee`);
-  }
-  */
-
   
   return backlogIssueAlerts;
 }
+
+
 
 const updateBacklogCardAlertsIndicator = (backlogCard, alerts) => {
   const ALERTS_INDICATOR_WRAPPER_ID = "ALERTS_INDICATOR_WRAPPER_ID";

@@ -43,7 +43,12 @@ export const JIRA_STATUSES = {
 };
 
 export const JIRA_LABELS = {
+  CUT_LINE: "cut_line",
+  NEEDS_DESIGN: "needs_design",
+  NEEDS_WORK: "needs_work",
+  READY_TO_WORK: "ready_to_work",
   WONT_ESTIMATE: "wont_estimate"
+
 };
 
 /**

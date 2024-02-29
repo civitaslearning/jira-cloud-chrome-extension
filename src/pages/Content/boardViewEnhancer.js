@@ -281,8 +281,8 @@ const enhanceBoardCard = (boardCard, boardIssueData) => {
 
   
   updateBoardCardAlertsIndicator(boardCard, alerts);
-    updateAvatar(JIRA_FIELD_IDS.TESTER, "Tester", boardCard, boardIssueData);
-    updateAvatar(JIRA_FIELD_IDS.OWNER, "Owner", boardCard, boardIssueData);
+  updateAvatar(JIRA_FIELD_IDS.TESTER, "Tester", boardCard, boardIssueData);
+  updateAvatar(JIRA_FIELD_IDS.OWNER, "Owner", boardCard, boardIssueData);
 
   const backlogCardContainer = boardCard.querySelectorAll(`*[data-test-id='platform-card.ui.card.focus-container']`)?.item(0);
   colorizeCard(backlogCardContainer, cardColor);
@@ -341,6 +341,10 @@ const updateAvatar = (jiraFieldId, fieldDisplayName, boardCard, issueData) => {
  */
 const getBoardIssueAlerts = (issueData) => {
   const boardIssueAlerts = [];
+
+  if( getLabels(issueData).includes(JIRA_LABELS.READY_TO_WORK) ) {
+    return boardIssueAlerts;
+  }
 
   if(isFlagged(issueData) ) {
 

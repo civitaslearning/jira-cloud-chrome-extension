@@ -154,10 +154,11 @@ export const addQuickFilters = async (quickFiltersSibling) => {
   appendQuickFilterButton(quickFiltersContainer, "None", "Custom filters" , "No Focus Group");
 
   appendQuickFilterLabel(quickFiltersContainer, "PLANNING:");
-  appendQuickFilterButton(quickFiltersContainer, "Unsorted", "Custom filters" , "Unsorted");
-  appendQuickFilterButton(quickFiltersContainer, "Not Ready", "Custom filters" , "Not Ready to Estimate");
-  appendQuickFilterButton(quickFiltersContainer, "Needs Info", "Custom filters" , "Needs Info");
   appendQuickFilterButton(quickFiltersContainer, "Ready to Estimate", "Custom filters" , "Ready to Estimate");
+  appendQuickFilterButton(quickFiltersContainer, "Needs Review", "Custom filters" , "Needs Review");
+  appendQuickFilterButton(quickFiltersContainer, "Unsorted", "Custom filters" , "Unsorted");
+  appendQuickFilterButton(quickFiltersContainer, "Needs Work", "Custom filters" , "Needs Work");
+  appendQuickFilterButton(quickFiltersContainer, "Needs Tester", "Custom filters" , "Needs Tester");
   appendQuickFilterButton(quickFiltersContainer, "Ready to Work", "Custom filters" , "Ready to Work");
   appendQuickFilterButton(quickFiltersContainer, "Not Done", "Custom filters" , "Not Done");
   
@@ -169,6 +170,7 @@ export const addQuickFilters = async (quickFiltersSibling) => {
   appendQuickFilterButton(quickFiltersContainer, "Post GA", "Custom filters" , "Course Demand Post GA");
     
   appendQuickFilterLabel(quickFiltersContainer, "MISC:");
+  appendQuickFilterButton(quickFiltersContainer, "Forced Ready to Work", "Custom filters" , "Forced Ready to Work");
   appendQuickFilterButton(quickFiltersContainer, "Flagged", "Custom filters" , "Flagged");
   appendQuickFilterButton(quickFiltersContainer, "Bugs", "Custom filters" , "Bugs");
     
